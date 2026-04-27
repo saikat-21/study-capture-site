@@ -1,0 +1,425 @@
+"use client";
+
+import { useState } from "react";
+import {
+  Activity,
+  BadgeIndianRupee,
+  Check,
+  KeyRound,
+  Loader2,
+  Mail,
+  Monitor,
+  ReceiptText,
+  ShieldCheck,
+  Users
+} from "lucide-react";
+
+const LICENSE_STATES = [
+  "paid_lifetime",
+  "free",
+  "refunded",
+  "chargeback",
+  "banned_abuse"
+];
+
+export default function AdminDashboardClient() {
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [session, setSession] = useState(null);
+  const [step, setStep] = useState("email");
+  const [dashboard, setDashboard] = useState(null);
+  const [licenseForm, setLicenseForm] = useState({
+    email: "",
+    state: "paid_lifetime",
+    maxDevices: "3",
+    note: ""
+  });
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function sendOtp(event) {
+    event.preventDefault();
+    await run(async () => {
+      const result = await postJson("/api/auth/send-otp", { email });
+      setStep("otp");
+      setMessage(result.message);
+    });
+  }
+
+  async function verifyOtp(event) {
+    event.preventDefault();
+    await run(async () => {
+      const result = await postJson("/api/auth/verify-otp", { email, otp });
+      setSession(result.session);
+      setMessage("Admin email verified.");
+      await loadDashboard(result.session.access_token);
+      setStep("dashboard");
+    });
+  }
+
+  async function loadDashboard(token = session?.access_token) {
+    const response = await fetch("/api/admin/overview", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || "Could not load dashboard.");
+    setDashboard(result);
+  }
+
+  async function updateLicense(event) {
+    event.preventDefault();
+    await run(async () => {
+      const result = await postJson(
+        "/api/admin/licenses/update",
+        {
+          email: licenseForm.email,
+          state: licenseForm.state,
+          maxDevices: Number(licenseForm.maxDevices),
+          note: licenseForm.note
+        },
+        { Authorization: `Bearer ${session.access_token}` }
+      );
+      setMessage(result.message);
+      setLicenseForm((current) => ({ ...current, note: "" }));
+      await loadDashboard();
+    });
+  }
+
+  async function run(action) {
+    setLoading(true);
+    setError("");
+    setMessage("");
+
+    try {
+      await action();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <section className="mx-auto max-w-7xl">
+      <div className="flex flex-col gap-6 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="flex items-center gap-2 text-sm font-semibold text-mint">
+            <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+            Production backend
+          </p>
+          <h1 className="mt-3 text-4xl font-semibold text-white sm:text-5xl">
+            Study Capture Admin
+          </h1>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-mist/62">
+            OTP-protected operations dashboard for Supabase users, payments, licenses, devices, and Razorpay confirmations.
+          </p>
+        </div>
+        {dashboard?.adminEmail ? (
+          <button
+            type="button"
+            onClick={() => loadDashboard().catch((err) => setError(err.message))}
+            disabled={loading}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/12 px-5 text-sm font-semibold text-white transition hover:border-mint/50 hover:bg-white/[0.06] disabled:opacity-60"
+          >
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Activity className="h-4 w-4" aria-hidden="true" />}
+            Refresh
+          </button>
+        ) : null}
+      </div>
+
+      {step === "email" ? (
+        <AuthPanel
+          title="Admin email"
+          icon={Mail}
+          onSubmit={sendOtp}
+          loading={loading}
+          buttonText="Send OTP"
+        >
+          <input
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            required
+            autoComplete="email"
+            className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 text-base text-white outline-none focus:border-mint/60"
+            placeholder="admin@studycapture.co"
+          />
+        </AuthPanel>
+      ) : null}
+
+      {step === "otp" ? (
+        <AuthPanel
+          title="Verify OTP"
+          icon={KeyRound}
+          onSubmit={verifyOtp}
+          loading={loading}
+          buttonText="Open dashboard"
+        >
+          <p className="text-sm text-mist/58">
+            OTP sent to <span className="font-semibold text-white">{email}</span>
+          </p>
+          <input
+            inputMode="numeric"
+            value={otp}
+            onChange={(event) => setOtp(event.target.value)}
+            required
+            maxLength={6}
+            className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 text-base tracking-[0.35em] text-white outline-none focus:border-mint/60"
+            placeholder="123456"
+          />
+        </AuthPanel>
+      ) : null}
+
+      {step === "dashboard" && dashboard ? (
+        <div className="mt-8 space-y-8">
+          <MetricGrid metrics={dashboard.metrics} />
+
+          <div className="grid gap-6 xl:grid-cols-[0.72fr_1.28fr]">
+            <LicenseUpdateForm
+              value={licenseForm}
+              onChange={setLicenseForm}
+              onSubmit={updateLicense}
+              loading={loading}
+            />
+            <RecentLicenses licenses={dashboard.recentLicenses} />
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-2">
+            <RecentPayments payments={dashboard.recentPayments} />
+            <RecentDevices devices={dashboard.recentDevices} />
+          </div>
+        </div>
+      ) : null}
+
+      {message ? <p className="mt-6 rounded-2xl bg-mint/10 p-4 text-sm text-mint">{message}</p> : null}
+      {error ? <p className="mt-6 rounded-2xl bg-coral/10 p-4 text-sm text-coral">{error}</p> : null}
+    </section>
+  );
+}
+
+function AuthPanel({ title, icon: Icon, onSubmit, loading, buttonText, children }) {
+  return (
+    <form
+      onSubmit={onSubmit}
+      className="mt-8 max-w-xl rounded-3xl border border-white/10 bg-[#101A20] p-6 shadow-panel sm:p-8"
+    >
+      <div className="mb-6 flex items-center gap-3">
+        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-mint/12 text-mint">
+          <Icon className="h-5 w-5" aria-hidden="true" />
+        </span>
+        <h2 className="text-2xl font-semibold text-white">{title}</h2>
+      </div>
+      <div className="space-y-5">{children}</div>
+      <button
+        type="submit"
+        disabled={loading}
+        className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-ink transition hover:bg-white disabled:opacity-65"
+      >
+        {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Check className="h-4 w-4" aria-hidden="true" />}
+        {buttonText}
+      </button>
+    </form>
+  );
+}
+
+function MetricGrid({ metrics }) {
+  const items = [
+    { label: "Users", value: metrics.users, icon: Users },
+    { label: "Paid Payments", value: metrics.paidPayments, icon: ReceiptText },
+    { label: "Pro Licenses", value: metrics.proLicenses, icon: ShieldCheck },
+    { label: "Active Devices", value: metrics.activeDevices, icon: Monitor },
+    { label: "Gross Revenue", value: formatMoney(metrics.grossRevenue), icon: BadgeIndianRupee },
+    { label: "Pending Payments", value: metrics.pendingPayments, icon: Activity }
+  ];
+
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+      {items.map((item) => (
+        <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.045] p-5">
+          <item.icon className="h-5 w-5 text-mint" aria-hidden="true" />
+          <p className="mt-4 text-sm text-mist/50">{item.label}</p>
+          <p className="mt-1 text-2xl font-semibold text-white">{item.value}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function LicenseUpdateForm({ value, onChange, onSubmit, loading }) {
+  return (
+    <form onSubmit={onSubmit} className="rounded-3xl border border-white/10 bg-[#101A20] p-6 shadow-panel">
+      <h2 className="text-xl font-semibold text-white">Update license</h2>
+      <div className="mt-5 space-y-4">
+        <input
+          type="email"
+          value={value.email}
+          onChange={(event) => onChange({ ...value, email: event.target.value })}
+          required
+          className="w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-3 text-sm text-white outline-none focus:border-mint/60"
+          placeholder="customer@example.com"
+        />
+        <select
+          value={value.state}
+          onChange={(event) => onChange({ ...value, state: event.target.value })}
+          className="w-full rounded-2xl border border-white/10 bg-[#101A20] px-4 py-3 text-sm text-white outline-none focus:border-mint/60"
+        >
+          {LICENSE_STATES.map((state) => (
+            <option key={state} value={state}>
+              {state}
+            </option>
+          ))}
+        </select>
+        <input
+          type="number"
+          min="1"
+          max="20"
+          value={value.maxDevices}
+          onChange={(event) => onChange({ ...value, maxDevices: event.target.value })}
+          className="w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-3 text-sm text-white outline-none focus:border-mint/60"
+          placeholder="Max devices"
+        />
+        <textarea
+          value={value.note}
+          onChange={(event) => onChange({ ...value, note: event.target.value })}
+          className="min-h-24 w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-3 text-sm text-white outline-none focus:border-mint/60"
+          placeholder="Internal note"
+        />
+      </div>
+      <button
+        type="submit"
+        disabled={loading}
+        className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-mint px-5 text-sm font-semibold text-ink transition hover:bg-white disabled:opacity-60"
+      >
+        {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+        Save license
+      </button>
+    </form>
+  );
+}
+
+function RecentLicenses({ licenses }) {
+  return (
+    <DataPanel title="Recent licenses">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[680px] text-left text-sm">
+          <thead className="text-mist/45">
+            <tr>
+              <th className="pb-3 font-medium">Email</th>
+              <th className="pb-3 font-medium">Reference</th>
+              <th className="pb-3 font-medium">State</th>
+              <th className="pb-3 font-medium">Devices</th>
+              <th className="pb-3 font-medium">Updated</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/10">
+            {licenses.map((license) => (
+              <tr key={license.id}>
+                <td className="py-3 text-white">{license.email}</td>
+                <td className="py-3 text-mist/65">{license.license_ref || "-"}</td>
+                <td className="py-3 text-mint">{license.state}</td>
+                <td className="py-3 text-mist/65">{license.max_devices}</td>
+                <td className="py-3 text-mist/50">{formatDate(license.updated_at)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </DataPanel>
+  );
+}
+
+function RecentPayments({ payments }) {
+  return (
+    <DataPanel title="Recent payments">
+      <div className="space-y-3">
+        {payments.map((payment) => (
+          <div key={payment.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="font-semibold text-white">{payment.email}</p>
+                <p className="mt-1 text-xs text-mist/45">{payment.provider_order_id}</p>
+              </div>
+              <span className="rounded-full bg-mint/10 px-3 py-1 text-xs font-semibold text-mint">
+                {payment.status}
+              </span>
+            </div>
+            <p className="mt-3 text-sm text-mist/70">{formatMoney(payment.amount)} · {payment.source || "website"} · {payment.reason || "direct"}</p>
+            <p className="mt-1 text-xs text-mist/45">{formatDate(payment.paid_at || payment.created_at)}</p>
+          </div>
+        ))}
+        {!payments.length ? <EmptyState /> : null}
+      </div>
+    </DataPanel>
+  );
+}
+
+function RecentDevices({ devices }) {
+  return (
+    <DataPanel title="Recent devices">
+      <div className="space-y-3">
+        {devices.map((device) => (
+          <div key={device.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+            <div className="flex items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-mint">
+                <Monitor className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <div>
+                <p className="font-semibold text-white">{device.browser_name || "Browser"} · {device.os || "Unknown OS"}</p>
+                <p className="mt-1 text-sm text-mist/58">{device.licenses?.email || "Unknown email"}</p>
+                <p className="mt-1 text-xs text-mist/42">{formatDate(device.last_seen_at)}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+        {!devices.length ? <EmptyState /> : null}
+      </div>
+    </DataPanel>
+  );
+}
+
+function DataPanel({ title, children }) {
+  return (
+    <section className="rounded-3xl border border-white/10 bg-[#101A20] p-6 shadow-panel">
+      <h2 className="text-xl font-semibold text-white">{title}</h2>
+      <div className="mt-5">{children}</div>
+    </section>
+  );
+}
+
+function EmptyState() {
+  return <p className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-sm text-mist/50">No records yet.</p>;
+}
+
+async function postJson(url, body, headers = {}) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...headers
+    },
+    body: JSON.stringify(body)
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || "Request failed.");
+  return result;
+}
+
+function formatMoney(amount) {
+  const paise = Number(amount) || 0;
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0
+  }).format(paise / 100);
+}
+
+function formatDate(value) {
+  if (!value) return "-";
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(new Date(value));
+}

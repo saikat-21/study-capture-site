@@ -33,6 +33,7 @@ In Razorpay Dashboard live mode:
 7. Select these events:
    - `payment.captured`
    - `order.paid`
+   - `payment.failed`
 
 ## Implemented Flow
 
@@ -44,7 +45,7 @@ In Razorpay Dashboard live mode:
 6. `/api/razorpay/verify-payment` verifies the signature with `RAZORPAY_KEY_SECRET`.
 7. The app marks the email Pro Lifetime in `lib/db.js`, creates `SC-PRO-YYYY-XXXXXX`, and redirects to `/success`.
 8. A Resend-backed welcome email is sent with the license reference when `RESEND_API_KEY` is configured.
-9. `/api/razorpay/webhook` verifies `X-Razorpay-Signature` using the raw request body and handles duplicate events idempotently.
+9. `/api/razorpay/webhook` verifies `X-Razorpay-Signature` using the raw request body and handles duplicate events idempotently. Failed payments are recorded without activating a license.
 10. The extension Activate Pro flow sends the email, license reference, and device fingerprint to `/api/license/activate`; the server verifies the paid license before issuing a signed device token.
 
 ## Persistence

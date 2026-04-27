@@ -15,6 +15,7 @@ Official website and Pro upgrade funnel for the Study Capture browser extension.
 ## Key Routes
 
 - `/` landing page
+- `/admin` OTP-protected admin dashboard
 - `/install` browser-aware install page
 - `/upgrade` email-first Pro upgrade flow
 - `/checkout` Razorpay Checkout payment flow
@@ -23,6 +24,8 @@ Official website and Pro upgrade funnel for the Study Capture browser extension.
 - `/api/razorpay/create-order`
 - `/api/razorpay/verify-payment`
 - `/api/razorpay/webhook`
+- `/api/admin/overview`
+- `/api/admin/licenses/update`
 - `/api/auth/send-otp`
 - `/api/auth/verify-otp`
 - `/api/license/activate`
@@ -52,6 +55,7 @@ Import this repository into Vercel. The project uses the Next.js framework prese
 See:
 
 - `supabase/schema.sql`
+- `SUPABASE_PRODUCTION.md`
 - `PAYMENT_SETUP.md`
 - `TESTING.md`
 - `docs/deployment-vercel.md`

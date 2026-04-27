@@ -16,6 +16,7 @@ Set these in Vercel Project Settings:
 - `LICENSE_TOKEN_SECRET`
 - `DEVICE_HASH_SECRET`
 - `RATE_LIMIT_SECRET`
+- `ADMIN_EMAILS=founder@studycapture.co`
 - `NEXT_PUBLIC_CHROME_STORE_URL`
 - `NEXT_PUBLIC_EDGE_STORE_URL`
 - `NEXT_PUBLIC_FIREFOX_STORE_URL`
@@ -23,7 +24,7 @@ Set these in Vercel Project Settings:
 - `RESEND_API_KEY`
 - `RESEND_FROM_EMAIL=Study Capture <support@studycapture.co>`
 
-Never expose `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `LICENSE_TOKEN_SECRET`, `DEVICE_HASH_SECRET`, `RATE_LIMIT_SECRET`, or `RESEND_API_KEY` with a `NEXT_PUBLIC_` prefix.
+Never expose `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `LICENSE_TOKEN_SECRET`, `DEVICE_HASH_SECRET`, `RATE_LIMIT_SECRET`, `ADMIN_EMAILS`, or `RESEND_API_KEY` with a `NEXT_PUBLIC_` prefix.
 
 ## Razorpay
 
@@ -37,6 +38,7 @@ Add it in Razorpay Dashboard live mode under webhooks and subscribe to:
 
 - `payment.captured`
 - `order.paid`
+- `payment.failed`
 
 Use the same webhook secret in Razorpay and Vercel as `RAZORPAY_WEBHOOK_SECRET`.
 
@@ -50,6 +52,10 @@ The Razorpay flow works with the in-memory mock DB when Supabase is not configur
 4. Keep RLS enabled. API routes use `SUPABASE_SERVICE_ROLE_KEY` and perform server-side ownership checks.
 
 `/api/license/activate` and `/api/license/status` require durable license/device rows in production, so do not rely on the in-memory mock for the live extension activation flow.
+
+## Admin
+
+Open `/admin` and sign in with email OTP. Only emails listed in `ADMIN_EMAILS` can load admin data or update license state.
 
 ## Build
 

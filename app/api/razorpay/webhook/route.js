@@ -2,6 +2,7 @@ import {
   createLicense,
   getPendingOrderByRazorpayOrderId,
   hasProcessedWebhookEvent,
+  markPaymentFailed,
   markPaymentSuccess,
   markWebhookEventProcessed
 } from "../../../../lib/db";
@@ -13,7 +14,7 @@ import { verifyRazorpayWebhookSignature } from "../../../../lib/server/razorpay"
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const HANDLED_EVENTS = new Set(["payment.captured", "order.paid"]);
+const HANDLED_EVENTS = new Set(["payment.captured", "order.paid", "payment.failed"]);
 
 export async function POST(request) {
   try {
@@ -61,6 +62,31 @@ export async function POST(request) {
       );
     }
 
+    if (eventType === "payment.failed") {
+      const failedPaymentId = paymentId || eventId;
+      await markPaymentFailed({
+        email,
+        razorpayOrderId: orderId,
+        razorpayPaymentId: failedPaymentId,
+        eventId,
+        rawEvent: event
+      });
+
+      await markWebhookEventProcessed({
+        eventId,
+        eventType,
+        razorpayOrderId: orderId,
+        razorpayPaymentId: failedPaymentId,
+        rawEvent: event
+      });
+
+      return ok({
+        message: "Failed payment recorded.",
+        eventId,
+        eventType
+      });
+    }
+
     const stablePaymentId = paymentId || eventId;
     const payment = await markPaymentSuccess({
       email,
@@ -72,6 +98,7 @@ export async function POST(request) {
     const license = await createLicense({
       email,
       paymentId: payment.provider_payment_id,
+      paymentRecordId: payment.id,
       rawEvent: event
     });
 

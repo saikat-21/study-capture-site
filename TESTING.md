@@ -38,14 +38,33 @@
 - Confirm `/api/license/status` keeps Pro active for that token.
 - Confirm a fourth active browser/device returns `device_limit_reached`.
 
+## Supabase Backend
+
+- Run `supabase/schema.sql` in production Supabase.
+- Confirm RLS is enabled on `users`, `payments`, `licenses`, `devices`, `webhook_events`, and `auth_events`.
+- Confirm a signed-in user can only select records matching their own email/auth user.
+- Confirm `webhook_events` and `auth_events` are not readable with anon/authenticated keys.
+- Confirm successful Razorpay verification creates/updates `users`, `payments`, and `licenses`.
+- Confirm the payment row has `license_id` after license activation.
+
+## Admin Dashboard
+
+- Set `ADMIN_EMAILS` in Vercel.
+- Open `/admin` and verify OTP with an allowed admin email.
+- Confirm metrics and recent records load.
+- Confirm a non-admin OTP session receives `admin_forbidden`.
+- Update a license state to `refunded`, confirm extension `/api/license/status` returns inactive.
+- Restore the license to `paid_lifetime`, confirm activation works again.
+
 ## Webhook
 
 - In Razorpay live dashboard, configure `https://studycapture.co/api/razorpay/webhook`.
-- Subscribe to `payment.captured` and `order.paid`.
+- Subscribe to `payment.captured`, `order.paid`, and `payment.failed`.
 - Confirm webhook requests with an invalid `X-Razorpay-Signature` are rejected.
 - Confirm duplicate webhook deliveries do not create duplicate licenses.
 - Confirm duplicate checkout + webhook confirmations do not send duplicate welcome emails.
 - Confirm webhook deliveries update payment/license state even if the browser closes after payment.
+- Confirm `payment.failed` webhook deliveries create/update a failed payment without activating Pro.
 
 ## Security
 

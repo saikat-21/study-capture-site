@@ -67,6 +67,7 @@ export async function POST(request) {
     const license = await createLicense({
       email,
       paymentId: payment.provider_payment_id,
+      paymentRecordId: payment.id,
       rawEvent: payment.raw_event
     });
 
