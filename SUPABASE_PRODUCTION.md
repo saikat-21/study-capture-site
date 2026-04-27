@@ -14,6 +14,12 @@ The production schema is in `supabase/schema.sql` and creates:
 
 Run the full SQL file in the Supabase SQL editor before sending live payments.
 
+If Supabase reports duplicate `payments.provider_order_id` rows before the new
+unique index can be created, run
+`supabase/cleanup-payments-provider-order-duplicates.sql` first. It preserves all
+rows, archives duplicate order IDs to unique values, and then creates the
+PostgREST-compatible unique index required by payment upserts.
+
 ## Environment Variables
 
 Set these in Vercel:

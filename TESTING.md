@@ -47,6 +47,7 @@
 - Confirm successful Razorpay verification creates/updates `users`, `payments`, `subscriptions`, and `licenses`.
 - Confirm the payment row has `license_id` after license activation.
 - Confirm the subscription row has `status: active`, `plan: pro_lifetime`, and `lifetime_access: true`.
+- Confirm `payments_provider_order_conflict_idx` exists on `payments(provider_order_id)`.
 
 ## Login / Account
 

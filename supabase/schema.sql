@@ -113,6 +113,8 @@ create index if not exists subscriptions_user_idx on public.subscriptions (user_
 create index if not exists subscriptions_license_idx on public.subscriptions (license_id);
 create index if not exists subscriptions_provider_payment_idx
   on public.subscriptions (provider, provider_payment_id);
+create unique index if not exists subscriptions_email_plan_conflict_idx
+  on public.subscriptions (email, plan);
 
 insert into public.subscriptions (
   user_id,
@@ -169,6 +171,12 @@ create index if not exists payments_provider_payment_idx on public.payments (pro
 create unique index if not exists payments_provider_order_idx
   on public.payments (provider_order_id)
   where provider_order_id is not null;
+
+-- Required by Supabase/PostgREST upsert({ onConflict: "provider_order_id" }).
+-- The partial index above protects non-null order IDs, but ON CONFLICT inference
+-- needs a non-partial unique index matching exactly the conflict target.
+create unique index if not exists payments_provider_order_conflict_idx
+  on public.payments (provider_order_id);
 
 create table if not exists public.webhook_events (
   id bigint generated always as identity primary key,
