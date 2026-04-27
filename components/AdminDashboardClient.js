@@ -189,6 +189,10 @@ export default function AdminDashboardClient() {
 
           <div className="grid gap-6 xl:grid-cols-2">
             <RecentPayments payments={dashboard.recentPayments} />
+            <RecentSubscriptions subscriptions={dashboard.recentSubscriptions} />
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-2">
             <RecentDevices devices={dashboard.recentDevices} />
           </div>
         </div>
@@ -230,13 +234,14 @@ function MetricGrid({ metrics }) {
     { label: "Users", value: metrics.users, icon: Users },
     { label: "Paid Payments", value: metrics.paidPayments, icon: ReceiptText },
     { label: "Pro Licenses", value: metrics.proLicenses, icon: ShieldCheck },
+    { label: "Subscriptions", value: metrics.activeSubscriptions, icon: ShieldCheck },
     { label: "Active Devices", value: metrics.activeDevices, icon: Monitor },
     { label: "Gross Revenue", value: formatMoney(metrics.grossRevenue), icon: BadgeIndianRupee },
     { label: "Pending Payments", value: metrics.pendingPayments, icon: Activity }
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-7">
       {items.map((item) => (
         <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.045] p-5">
           <item.icon className="h-5 w-5 text-mint" aria-hidden="true" />
@@ -351,6 +356,33 @@ function RecentPayments({ payments }) {
           </div>
         ))}
         {!payments.length ? <EmptyState /> : null}
+      </div>
+    </DataPanel>
+  );
+}
+
+function RecentSubscriptions({ subscriptions }) {
+  return (
+    <DataPanel title="Recent subscriptions">
+      <div className="space-y-3">
+        {subscriptions.map((subscription) => (
+          <div key={subscription.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="font-semibold text-white">{subscription.email}</p>
+                <p className="mt-1 text-xs text-mist/45">{subscription.plan}</p>
+              </div>
+              <span className="rounded-full bg-mint/10 px-3 py-1 text-xs font-semibold text-mint">
+                {subscription.status}
+              </span>
+            </div>
+            <p className="mt-3 text-sm text-mist/70">
+              {formatMoney(subscription.amount)} · {subscription.provider || "razorpay"} · {subscription.lifetime_access ? "lifetime" : "limited"}
+            </p>
+            <p className="mt-1 text-xs text-mist/45">{formatDate(subscription.started_at || subscription.updated_at)}</p>
+          </div>
+        ))}
+        {!subscriptions.length ? <EmptyState /> : null}
       </div>
     </DataPanel>
   );

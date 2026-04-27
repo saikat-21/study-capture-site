@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { contactEmail, contactMailto } from "../../lib/site";
+import { supportEmail, supportMailto } from "../../lib/site";
 
 export const metadata = {
   title: "Privacy Policy",
@@ -27,7 +27,7 @@ export default function PrivacyPage() {
             Browser permissions are used to provide capture, download, and cross-browser extension functionality. Some browser-protected pages cannot be captured.
           </p>
           <p>
-            For privacy questions, contact <a className="text-mint" href={contactMailto}>{contactEmail}</a>.
+            For privacy questions, contact <a className="text-mint" href={supportMailto}>{supportEmail}</a>.
           </p>
         </div>
       </article>

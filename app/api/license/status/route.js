@@ -1,5 +1,6 @@
 import {
   getLicenseByEmail as getDbLicenseByEmail,
+  getSubscriptionByEmail,
   listActiveDevicesForLicense
 } from "../../../../lib/db";
 import { getAuthenticatedUser } from "../../../../lib/server/auth";
@@ -73,11 +74,13 @@ export async function GET(request) {
 
 async function getSignedLicenseStatus(payload, accessToken) {
   const license = await getDbLicenseByEmail(payload.email);
+  const subscription = await getSubscriptionByEmail(payload.email);
   const activeDevices = license ? await listActiveDevicesForLicense(license) : [];
   const licenseIsActive =
     Boolean(license) &&
     license.state === "paid_lifetime" &&
-    license.license_ref === payload.licenseRef;
+    license.license_ref === payload.licenseRef &&
+    (!subscription || subscription.status === "active");
   const deviceIsActive =
     licenseIsActive &&
     activeDevices.some((device) => device.device_id_hash === payload.deviceIdHash);
@@ -87,6 +90,8 @@ async function getSignedLicenseStatus(payload, accessToken) {
     email: payload.email,
     plan: active ? "pro" : "free",
     licenseState: license?.state || "free",
+    subscriptionStatus: subscription?.status || "none",
+    subscriptionPlan: subscription?.plan || null,
     licenseRef: payload.licenseRef,
     maxDevices: license?.max_devices || payload.maxDevices || 3,
     active,

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { contactEmail, contactMailto } from "../../lib/site";
+import { billingEmail, billingMailto } from "../../lib/site";
 
 export const metadata = {
   title: "Terms",
@@ -27,7 +27,7 @@ export default function TermsPage() {
             The product is provided without guarantees that every webpage or browser-protected page can be captured.
           </p>
           <p>
-            For terms questions, contact <a className="text-mint" href={contactMailto}>{contactEmail}</a>.
+            For billing, refund, invoice, or subscription questions, contact <a className="text-mint" href={billingMailto}>{billingEmail}</a>.
           </p>
         </div>
       </article>

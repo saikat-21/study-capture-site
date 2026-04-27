@@ -15,10 +15,13 @@ export async function GET(request) {
       paidPaymentsCount,
       pendingPaymentsCount,
       proLicensesCount,
+      activeSubscriptionsCount,
       activeDevicesCount,
       revenueRows,
       licenseStateRows,
+      subscriptionStateRows,
       recentPayments,
+      recentSubscriptions,
       recentLicenses,
       recentDevices
     ] = await Promise.all([
@@ -26,16 +29,24 @@ export async function GET(request) {
       countRows(supabase, "payments", (query) => query.eq("status", "paid")),
       countRows(supabase, "payments", (query) => query.eq("status", "pending")),
       countRows(supabase, "licenses", (query) => query.eq("state", "paid_lifetime")),
+      countRows(supabase, "subscriptions", (query) => query.eq("status", "active")),
       countRows(supabase, "devices", (query) => query.is("deactivated_at", null)),
       selectRows(supabase, "payments", "amount,currency", (query) =>
         query.eq("status", "paid").limit(1000)
       ),
       selectRows(supabase, "licenses", "state", (query) => query.limit(1000)),
+      selectRows(supabase, "subscriptions", "status", (query) => query.limit(1000)),
       selectRows(
         supabase,
         "payments",
         "id,email,provider,provider_order_id,provider_payment_id,amount,currency,status,source,reason,created_at,paid_at",
         (query) => query.order("created_at", { ascending: false }).limit(20)
+      ),
+      selectRows(
+        supabase,
+        "subscriptions",
+        "id,email,plan,status,provider,provider_order_id,provider_payment_id,amount,currency,lifetime_access,started_at,ended_at,updated_at",
+        (query) => query.order("updated_at", { ascending: false }).limit(20)
       ),
       selectRows(
         supabase,
@@ -58,11 +69,14 @@ export async function GET(request) {
         paidPayments: paidPaymentsCount,
         pendingPayments: pendingPaymentsCount,
         proLicenses: proLicensesCount,
+        activeSubscriptions: activeSubscriptionsCount,
         activeDevices: activeDevicesCount,
         grossRevenue: sumRevenue(revenueRows),
-        licenseStates: countLicenseStates(licenseStateRows)
+        licenseStates: countStates(licenseStateRows, "state"),
+        subscriptionStates: countStates(subscriptionStateRows, "status")
       },
       recentPayments,
+      recentSubscriptions,
       recentLicenses,
       recentDevices
     });
@@ -97,9 +111,9 @@ function sumRevenue(payments) {
   );
 }
 
-function countLicenseStates(licenses) {
-  return licenses.reduce((states, license) => {
-    const state = license.state || "unknown";
+function countStates(rows, key) {
+  return rows.reduce((states, row) => {
+    const state = row[key] || "unknown";
     states[state] = (states[state] || 0) + 1;
     return states;
   }, {});

@@ -7,6 +7,7 @@ import {
   PRO_AMOUNT,
   PRO_CURRENCY
 } from "../../../../lib/server/razorpay";
+import { maybeAssertRateLimit, maybeRecordAuthEvent } from "../../../../lib/server/rate-limit";
 import { normalizeEmail, normalizeOptionalString } from "../../../../lib/server/validation";
 
 export const runtime = "nodejs";
@@ -21,11 +22,22 @@ const ALLOWED_REASONS = new Set([
 ]);
 
 export async function POST(request) {
+  let email;
+  let rateLimitContext;
+
   try {
     const body = await readJson(request);
-    const email = normalizeEmail(body.email);
+    email = normalizeEmail(body.email);
     const source = normalizeSource(body.source);
     const reason = normalizeReason(body.reason);
+    rateLimitContext = await maybeAssertRateLimit({
+      request,
+      email,
+      eventType: "payment_order_create",
+      windowSeconds: 60 * 60,
+      emailLimit: 12,
+      ipLimit: 50
+    });
     const receipt = buildRazorpayReceipt({ email, source });
 
     const razorpayOrder = await createRazorpayOrder({
@@ -51,6 +63,19 @@ export async function POST(request) {
       receipt
     });
 
+    await maybeRecordAuthEvent({
+      supabase: rateLimitContext?.supabase,
+      request,
+      email,
+      eventType: "payment_order_create",
+      success: true,
+      metadata: {
+        source,
+        reason,
+        providerOrderId: razorpayOrder.id
+      }
+    });
+
     return ok({
       order_id: razorpayOrder.id,
       amount: razorpayOrder.amount,
@@ -58,6 +83,14 @@ export async function POST(request) {
       key_id: getRazorpayKeyId()
     });
   } catch (error) {
+    await maybeRecordAuthEvent({
+      supabase: rateLimitContext?.supabase,
+      request,
+      email,
+      eventType: "payment_order_create",
+      success: false,
+      metadata: { reason: error.code || error.message }
+    });
     return fail(error);
   }
 }

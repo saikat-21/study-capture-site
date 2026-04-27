@@ -6,6 +6,7 @@ import {
 import { sendWelcomeEmail } from "../../../../lib/server/email";
 import { fail, HttpError, ok, readJson } from "../../../../lib/server/errors";
 import { verifyRazorpayPaymentSignature } from "../../../../lib/server/razorpay";
+import { maybeAssertRateLimit, maybeRecordAuthEvent } from "../../../../lib/server/rate-limit";
 import {
   normalizeEmail,
   normalizeRequiredString
@@ -15,9 +16,12 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request) {
+  let email;
+  let rateLimitContext;
+
   try {
     const body = await readJson(request);
-    const email = normalizeEmail(body.email);
+    email = normalizeEmail(body.email);
     const razorpayOrderId = normalizeRequiredString(
       body.razorpay_order_id,
       "razorpay_order_id",
@@ -33,6 +37,15 @@ export async function POST(request) {
       "razorpay_signature",
       160
     );
+
+    rateLimitContext = await maybeAssertRateLimit({
+      request,
+      email,
+      eventType: "payment_verify",
+      windowSeconds: 15 * 60,
+      emailLimit: 20,
+      ipLimit: 80
+    });
 
     const order = await getPendingOrderByRazorpayOrderId(razorpayOrderId);
 
@@ -75,6 +88,19 @@ export async function POST(request) {
       await sendWelcomeEmail(email, license.license_ref);
     }
 
+    await maybeRecordAuthEvent({
+      supabase: rateLimitContext?.supabase,
+      request,
+      email,
+      eventType: "payment_verify",
+      success: true,
+      metadata: {
+        razorpayOrderId,
+        razorpayPaymentId,
+        licenseRef: license.license_ref
+      }
+    });
+
     return ok({
       message: "Payment verified. Study Capture Pro is active.",
       email,
@@ -82,6 +108,14 @@ export async function POST(request) {
       licenseRef: license.license_ref
     });
   } catch (error) {
+    await maybeRecordAuthEvent({
+      supabase: rateLimitContext?.supabase,
+      request,
+      email,
+      eventType: "payment_verify",
+      success: false,
+      metadata: { reason: error.code || error.message }
+    });
     return fail(error);
   }
 }

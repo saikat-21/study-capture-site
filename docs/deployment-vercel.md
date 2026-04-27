@@ -6,6 +6,9 @@ Set these in Vercel Project Settings:
 
 - `NEXT_PUBLIC_SITE_URL=https://studycapture.co`
 - `NEXT_PUBLIC_CONTACT_EMAIL=support@studycapture.co`
+- `NEXT_PUBLIC_SUPPORT_EMAIL=support@studycapture.co`
+- `NEXT_PUBLIC_BILLING_EMAIL=billing@studycapture.co`
+- `NEXT_PUBLIC_FOUNDER_EMAIL=founder@studycapture.co`
 - `RAZORPAY_KEY_ID`
 - `RAZORPAY_KEY_SECRET`
 - `NEXT_PUBLIC_RAZORPAY_KEY_ID`
@@ -22,7 +25,7 @@ Set these in Vercel Project Settings:
 - `NEXT_PUBLIC_FIREFOX_STORE_URL`
 - `NEXT_PUBLIC_SAFARI_STORE_URL`
 - `RESEND_API_KEY`
-- `RESEND_FROM_EMAIL=Study Capture <support@studycapture.co>`
+- `RESEND_FROM_EMAIL=Study Capture <billing@studycapture.co>`
 
 Never expose `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `LICENSE_TOKEN_SECRET`, `DEVICE_HASH_SECRET`, `RATE_LIMIT_SECRET`, `ADMIN_EMAILS`, or `RESEND_API_KEY` with a `NEXT_PUBLIC_` prefix.
 

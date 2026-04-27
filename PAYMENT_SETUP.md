@@ -10,6 +10,7 @@ RAZORPAY_KEY_SECRET=<live key secret>
 NEXT_PUBLIC_RAZORPAY_KEY_ID=<same live key id>
 RAZORPAY_WEBHOOK_SECRET=<webhook secret you create in Razorpay>
 NEXT_PUBLIC_SITE_URL=https://studycapture.co
+NEXT_PUBLIC_BILLING_EMAIL=billing@studycapture.co
 ```
 
 `RAZORPAY_KEY_SECRET` and `RAZORPAY_WEBHOOK_SECRET` must stay server-only.
@@ -43,7 +44,7 @@ In Razorpay Dashboard live mode:
 4. The browser opens Razorpay Checkout using `order_id`.
 5. Checkout returns `razorpay_payment_id`, `razorpay_order_id`, and `razorpay_signature`.
 6. `/api/razorpay/verify-payment` verifies the signature with `RAZORPAY_KEY_SECRET`.
-7. The app marks the email Pro Lifetime in `lib/db.js`, creates `SC-PRO-YYYY-XXXXXX`, and redirects to `/success`.
+7. The app marks the email Pro Lifetime in `lib/db.js`, creates `SC-PRO-YYYY-XXXXXX`, upserts an active `pro_lifetime` subscription, and redirects to `/success`.
 8. A Resend-backed welcome email is sent with the license reference when `RESEND_API_KEY` is configured.
 9. `/api/razorpay/webhook` verifies `X-Razorpay-Signature` using the raw request body and handles duplicate events idempotently. Failed payments are recorded without activating a license.
 10. The extension Activate Pro flow sends the email, license reference, and device fingerprint to `/api/license/activate`; the server verifies the paid license before issuing a signed device token.

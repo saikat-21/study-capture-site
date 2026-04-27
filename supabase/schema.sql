@@ -25,6 +25,29 @@ create table if not exists public.licenses (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references public.users(id) on delete set null,
+  license_id uuid references public.licenses(id) on delete set null,
+  email citext not null,
+  plan text not null default 'pro_lifetime',
+  status text not null default 'active' check (
+    status in ('active', 'free', 'refunded', 'chargeback', 'banned_abuse', 'cancelled')
+  ),
+  provider text not null default 'razorpay',
+  provider_order_id text,
+  provider_payment_id text,
+  amount integer not null default 79900,
+  currency text not null default 'INR',
+  lifetime_access boolean not null default true,
+  started_at timestamptz,
+  ended_at timestamptz,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (email, plan)
+);
+
 create table if not exists public.devices (
   id uuid primary key default gen_random_uuid(),
   license_id uuid not null references public.licenses(id) on delete cascade,
@@ -77,6 +100,60 @@ alter table public.licenses add column if not exists license_ref text;
 create unique index if not exists licenses_license_ref_idx
   on public.licenses (license_ref)
   where license_ref is not null;
+
+alter table public.subscriptions add column if not exists user_id uuid references public.users(id) on delete set null;
+alter table public.subscriptions add column if not exists license_id uuid references public.licenses(id) on delete set null;
+alter table public.subscriptions add column if not exists provider_order_id text;
+alter table public.subscriptions add column if not exists provider_payment_id text;
+alter table public.subscriptions add column if not exists lifetime_access boolean not null default true;
+alter table public.subscriptions add column if not exists ended_at timestamptz;
+
+create index if not exists subscriptions_email_idx on public.subscriptions (email);
+create index if not exists subscriptions_user_idx on public.subscriptions (user_id);
+create index if not exists subscriptions_license_idx on public.subscriptions (license_id);
+create index if not exists subscriptions_provider_payment_idx
+  on public.subscriptions (provider, provider_payment_id);
+
+insert into public.subscriptions (
+  user_id,
+  license_id,
+  email,
+  plan,
+  status,
+  provider,
+  amount,
+  currency,
+  lifetime_access,
+  started_at,
+  ended_at,
+  metadata
+)
+select
+  l.user_id,
+  l.id,
+  l.email,
+  'pro_lifetime',
+  case
+    when l.state = 'paid_lifetime' then 'active'
+    when l.state in ('refunded', 'chargeback', 'banned_abuse') then l.state
+    else 'free'
+  end,
+  'razorpay',
+  79900,
+  'INR',
+  true,
+  l.activated_at,
+  case when l.state = 'paid_lifetime' then null else now() end,
+  jsonb_build_object('licenseRef', l.license_ref, 'backfilled', true)
+from public.licenses l
+where l.license_ref is not null
+on conflict (email, plan) do update set
+  user_id = excluded.user_id,
+  license_id = excluded.license_id,
+  status = excluded.status,
+  lifetime_access = excluded.lifetime_access,
+  started_at = coalesce(public.subscriptions.started_at, excluded.started_at),
+  updated_at = now();
 
 alter table public.payments add column if not exists provider_order_id text;
 alter table public.payments add column if not exists user_id uuid references public.users(id) on delete set null;
@@ -143,6 +220,11 @@ create trigger licenses_set_updated_at
 before update on public.licenses
 for each row execute function public.set_updated_at();
 
+drop trigger if exists subscriptions_set_updated_at on public.subscriptions;
+create trigger subscriptions_set_updated_at
+before update on public.subscriptions
+for each row execute function public.set_updated_at();
+
 drop trigger if exists devices_set_updated_at on public.devices;
 create trigger devices_set_updated_at
 before update on public.devices
@@ -155,6 +237,7 @@ for each row execute function public.set_updated_at();
 
 alter table public.users enable row level security;
 alter table public.licenses enable row level security;
+alter table public.subscriptions enable row level security;
 alter table public.devices enable row level security;
 alter table public.payments enable row level security;
 alter table public.webhook_events enable row level security;
@@ -178,6 +261,21 @@ with check ((select auth.uid()) is not null and auth_user_id = (select auth.uid(
 drop policy if exists "licenses_select_own" on public.licenses;
 create policy "licenses_select_own"
 on public.licenses
+for select
+to authenticated
+using (
+  (select auth.uid()) is not null
+  and (
+    user_id in (
+      select id from public.users where auth_user_id = (select auth.uid())
+    )
+    or email = ((select auth.jwt()) ->> 'email')::citext
+  )
+);
+
+drop policy if exists "subscriptions_select_own" on public.subscriptions;
+create policy "subscriptions_select_own"
+on public.subscriptions
 for select
 to authenticated
 using (

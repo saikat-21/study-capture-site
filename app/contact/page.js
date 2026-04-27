@@ -1,6 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, Mail } from "lucide-react";
-import { contactEmail, contactMailto } from "../../lib/site";
+import {
+  billingEmail,
+  billingMailto,
+  founderEmail,
+  founderMailto,
+  supportEmail,
+  supportMailto
+} from "../../lib/site";
 
 export const metadata = {
   title: "Contact",
@@ -18,17 +25,30 @@ export default function ContactPage() {
           </div>
           <h1 className="mt-8 text-4xl font-semibold text-white">Contact</h1>
           <p className="mt-5 max-w-xl text-base leading-8 text-mist/68">
-            Questions about installs, Pro access, browser support, or partnership workflows can go straight to the Study Capture inbox.
+            Questions about installs, browser support, billing, or business workflows can go straight to the right Study Capture inbox.
           </p>
-          <a
-            href={contactMailto}
-            className="mt-8 inline-flex h-12 items-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-ink transition hover:-translate-y-0.5 hover:bg-white focus:outline-none focus:ring-2 focus:ring-mint focus:ring-offset-2 focus:ring-offset-ink"
-          >
-            {contactEmail}
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </a>
+          <div className="mt-8 grid gap-3">
+            <ContactLink label="Support" email={supportEmail} href={supportMailto} />
+            <ContactLink label="Billing, refunds, invoices" email={billingEmail} href={billingMailto} />
+            <ContactLink label="Admin and business" email={founderEmail} href={founderMailto} />
+          </div>
         </div>
       </section>
     </main>
+  );
+}
+
+function ContactLink({ label, email, href }) {
+  return (
+    <a
+      href={href}
+      className="inline-flex min-h-12 items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.045] px-4 py-3 text-sm transition hover:border-mint/40 hover:bg-white/[0.07]"
+    >
+      <span>
+        <span className="block font-semibold text-white">{label}</span>
+        <span className="mt-1 block text-mist/60">{email}</span>
+      </span>
+      <ArrowRight className="h-4 w-4 shrink-0 text-mint" aria-hidden="true" />
+    </a>
   );
 }

@@ -76,6 +76,14 @@ export async function POST(request) {
 
     if (error) throw error;
 
+    await syncSubscriptionState({
+      supabase,
+      license: data,
+      state,
+      adminEmail: admin.email,
+      note
+    });
+
     await supabase.from("auth_events").insert({
       event_type: "admin_license_update",
       email: data.email,
@@ -96,6 +104,39 @@ export async function POST(request) {
   } catch (error) {
     return fail(error);
   }
+}
+
+async function syncSubscriptionState({ supabase, license, state, adminEmail, note }) {
+  const status = subscriptionStatusForLicenseState(state);
+  const now = new Date().toISOString();
+  const patch = {
+    status,
+    ended_at: status === "active" ? null : now,
+    metadata: {
+      lastAdminUpdate: {
+        adminEmail,
+        note,
+        licenseState: state,
+        subscriptionStatus: status,
+        updatedAt: now
+      }
+    }
+  };
+
+  const { error } = await supabase
+    .from("subscriptions")
+    .update(patch)
+    .eq("license_id", license.id);
+
+  if (error) throw error;
+}
+
+function subscriptionStatusForLicenseState(state) {
+  if (state === "paid_lifetime") return "active";
+  if (state === "banned_abuse") return "banned_abuse";
+  if (state === "chargeback") return "chargeback";
+  if (state === "refunded") return "refunded";
+  return "free";
 }
 
 function normalizeMaxDevices(value) {

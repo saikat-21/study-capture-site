@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BadgeCheck, Loader2, Lock, ShieldCheck } from "lucide-react";
+import { billingEmail } from "../lib/site";
 
 const CHECKOUT_KEY = "studyCaptureCheckout";
 const SUCCESS_KEY = "studyCapturePaymentSuccess";
@@ -95,7 +96,7 @@ export default function CheckoutClient() {
           } catch (err) {
             const detail = err.message ? ` ${err.message}` : "";
             setError(
-              `Payment completed, but license activation did not finish.${detail} Contact support with payment ID ${response.razorpay_payment_id}.`
+              `Payment completed, but license activation did not finish.${detail} Contact ${billingEmail} with payment ID ${response.razorpay_payment_id}.`
             );
             setLoading(false);
           }

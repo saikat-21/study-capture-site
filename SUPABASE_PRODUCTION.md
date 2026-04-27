@@ -6,6 +6,7 @@ The production schema is in `supabase/schema.sql` and creates:
 
 - `users`
 - `payments`
+- `subscriptions`
 - `licenses`
 - `devices`
 - `webhook_events`
@@ -59,7 +60,8 @@ Successful verified payments:
 2. Upsert the `users` row by email.
 3. Upsert a `paid_lifetime` license.
 4. Attach the payment to the license.
-5. Send the welcome/license email when Resend is configured.
+5. Upsert an `active` `pro_lifetime` subscription row.
+6. Send the welcome/license email when Resend is configured.
 
 The webhook endpoint is the source-of-truth fallback and is idempotent through `webhook_events`.
 `payment.failed` webhooks are recorded as failed payment rows and never activate a license.
@@ -72,6 +74,16 @@ The extension activates Pro through:
 - `GET /api/license/status`
 
 Activation requires the paid email, license reference, and device details. The server verifies the license state and device limit before returning a signed token. The extension revalidates that token against `/api/license/status`.
+
+## Account Login
+
+Customer account URL:
+
+```text
+https://studycapture.co/login
+```
+
+This uses the same Supabase email OTP flow as license management. After OTP verification, `/api/account/me` returns the server-verified user, license, subscription, payment, and device records.
 
 ## Admin Dashboard
 
@@ -86,13 +98,13 @@ Access requires:
 1. Supabase email OTP.
 2. The verified email must be listed in `ADMIN_EMAILS`.
 
-The dashboard shows users, paid/pending payments, Pro licenses, active devices, gross revenue, recent activity, and an admin license update form for refunds, chargebacks, bans, and device-limit adjustments.
+The dashboard shows users, paid/pending payments, active subscriptions, Pro licenses, active devices, gross revenue, recent activity, and an admin license update form for refunds, chargebacks, bans, and device-limit adjustments.
 
 ## Row Level Security
 
 RLS is enabled for all application tables.
 
-- Authenticated users can select only their own `users`, `payments`, `licenses`, and `devices`.
+- Authenticated users can select only their own `users`, `payments`, `subscriptions`, `licenses`, and `devices`.
 - `webhook_events` and `auth_events` have no anon/authenticated policies.
 - Server API routes use `SUPABASE_SERVICE_ROLE_KEY` and perform ownership/admin checks before writing.
 

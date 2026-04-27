@@ -1,4 +1,8 @@
-import { activateDeviceForLicense, getLicenseByEmail } from "../../../../lib/db";
+import {
+  activateDeviceForLicense,
+  getLicenseByEmail,
+  getSubscriptionByEmail
+} from "../../../../lib/db";
 import { fail, HttpError, ok, readJson } from "../../../../lib/server/errors";
 import { hashDeviceId, signLicenseToken } from "../../../../lib/server/license-token";
 import { assertRateLimit, recordAuthEvent } from "../../../../lib/server/rate-limit";
@@ -32,8 +36,13 @@ export async function POST(request) {
     rateLimitContext = await maybeAssertActivationRateLimit({ request, email });
 
     const license = await getLicenseByEmail(email);
+    const subscription = await getSubscriptionByEmail(email);
 
-    if (!license || license.state !== PAID_STATE) {
+    if (
+      !license ||
+      license.state !== PAID_STATE ||
+      (subscription && subscription.status !== "active")
+    ) {
       throw new HttpError(
         402,
         "license_not_paid",
@@ -95,6 +104,7 @@ export async function POST(request) {
       email,
       plan: "pro",
       licenseState: license.state,
+      subscriptionStatus: subscription?.status || "active",
       licenseRef: license.license_ref,
       maxDevices: activation.maxDevices,
       device: activation.device,

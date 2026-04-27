@@ -41,11 +41,20 @@
 ## Supabase Backend
 
 - Run `supabase/schema.sql` in production Supabase.
-- Confirm RLS is enabled on `users`, `payments`, `licenses`, `devices`, `webhook_events`, and `auth_events`.
+- Confirm RLS is enabled on `users`, `payments`, `subscriptions`, `licenses`, `devices`, `webhook_events`, and `auth_events`.
 - Confirm a signed-in user can only select records matching their own email/auth user.
 - Confirm `webhook_events` and `auth_events` are not readable with anon/authenticated keys.
-- Confirm successful Razorpay verification creates/updates `users`, `payments`, and `licenses`.
+- Confirm successful Razorpay verification creates/updates `users`, `payments`, `subscriptions`, and `licenses`.
 - Confirm the payment row has `license_id` after license activation.
+- Confirm the subscription row has `status: active`, `plan: pro_lifetime`, and `lifetime_access: true`.
+
+## Login / Account
+
+- Open `/login`.
+- Enter a new email and verify the Supabase OTP.
+- Confirm `/api/account/me` returns the server-verified account, license, subscription, payment, and device data.
+- Confirm unpaid accounts show Free and paid accounts show Pro Lifetime.
+- Confirm billing contact points to `billing@studycapture.co` and product help points to `support@studycapture.co`.
 
 ## Admin Dashboard
 
