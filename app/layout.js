@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-  metadataBase: new URL("https://study-capture-site.vercel.app"),
+  metadataBase: new URL("https://studycapture.co"),
   title: {
     default: "Study Capture - Webpage Capture for Study Books",
     template: "%s | Study Capture"
@@ -12,7 +12,7 @@ export const metadata = {
     title: "Study Capture",
     description:
       "Capture webpages into PNG, PDF, or Study Books instantly.",
-    url: "https://study-capture-site.vercel.app",
+    url: "https://studycapture.co",
     siteName: "Study Capture",
     images: [
       {

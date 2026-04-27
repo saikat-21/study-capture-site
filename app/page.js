@@ -571,6 +571,9 @@ function SiteFooter() {
           <span className="text-sm font-semibold text-white">Study Capture</span>
         </Link>
         <nav className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-mist/58" aria-label="Footer navigation">
+          <Link href="/install" className="transition hover:text-white">Install</Link>
+          <Link href="/upgrade" className="transition hover:text-white">Upgrade</Link>
+          <Link href="/manage-license" className="transition hover:text-white">Manage License</Link>
           <Link href="/contact" className="transition hover:text-white">Contact</Link>
           <Link href="/privacy" className="transition hover:text-white">Privacy</Link>
           <Link href="/terms" className="transition hover:text-white">Terms</Link>

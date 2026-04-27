@@ -1,0 +1,205 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { BadgeCheck, Loader2, Lock, ShieldCheck } from "lucide-react";
+
+const CHECKOUT_KEY = "studyCaptureCheckout";
+const SUCCESS_KEY = "studyCapturePaymentSuccess";
+
+export default function CheckoutClient() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const paymentCompletedRef = useRef(false);
+
+  const source = searchParams.get("src") || "website";
+  const reason = searchParams.get("reason") || "direct";
+
+  useEffect(() => {
+    const stored = window.sessionStorage.getItem(CHECKOUT_KEY);
+    if (!stored) return;
+
+    try {
+      const parsed = JSON.parse(stored);
+      setEmail(parsed.email || "");
+    } catch {
+      setEmail("");
+    }
+  }, []);
+
+  const canPay = useMemo(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email), [email]);
+
+  async function startPayment() {
+    setError("");
+    setLoading(true);
+    paymentCompletedRef.current = false;
+
+    try {
+      if (!canPay) {
+        throw new Error("Start from the upgrade page with a valid email address.");
+      }
+
+      await loadRazorpayCheckout();
+
+      const order = await postJson("/api/razorpay/create-order", {
+        email,
+        source,
+        reason
+      });
+
+      const checkout = new window.Razorpay({
+        key: order.key_id,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Study Capture",
+        description: "Study Capture Pro Lifetime",
+        order_id: order.order_id,
+        prefill: {
+          email
+        },
+        notes: {
+          email,
+          source,
+          reason,
+          product: "Study Capture Pro Lifetime"
+        },
+        theme: {
+          color: "#5FE0B7"
+        },
+        handler: async (response) => {
+          paymentCompletedRef.current = true;
+          try {
+            const verification = await postJson("/api/razorpay/verify-payment", {
+              email,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            });
+
+            window.sessionStorage.setItem(
+              SUCCESS_KEY,
+              JSON.stringify({
+                email: verification.email,
+                licenseRef: verification.licenseRef,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                paidAt: new Date().toISOString()
+              })
+            );
+
+            router.push("/success");
+          } catch (err) {
+            const detail = err.message ? ` ${err.message}` : "";
+            setError(
+              `Payment completed, but license activation did not finish.${detail} Contact support with payment ID ${response.razorpay_payment_id}.`
+            );
+            setLoading(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            if (!paymentCompletedRef.current) {
+              setError("Payment cancelled. You have not been charged.");
+            }
+            setLoading(false);
+          }
+        }
+      });
+
+      checkout.on("payment.failed", (response) => {
+        paymentCompletedRef.current = false;
+        setError(response.error?.description || "Payment failed. Please try again.");
+        setLoading(false);
+      });
+
+      checkout.open();
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
+    }
+  }
+
+  return (
+    <section className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[0.85fr_1.15fr]">
+      <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-6 shadow-panel sm:p-8">
+        <p className="text-sm font-semibold text-mint">Checkout</p>
+        <h1 className="mt-4 text-4xl font-semibold text-white">Study Capture Pro Lifetime</h1>
+        <div className="mt-7 flex items-end gap-3">
+          <span className="text-5xl font-semibold text-white">₹799</span>
+          <span className="pb-2 text-sm text-mist/55">one-time payment</span>
+        </div>
+        <div className="mt-8 rounded-2xl border border-mint/20 bg-mint/10 p-4">
+          <div className="flex gap-3">
+            <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-mint" aria-hidden="true" />
+            <div>
+              <p className="font-semibold text-white">License email</p>
+              <p className="mt-1 text-sm text-mist/65">{email || "No email found."}</p>
+            </div>
+          </div>
+        </div>
+        {!canPay ? (
+          <Link
+            href={`/upgrade?src=${encodeURIComponent(source)}${reason !== "direct" ? `&reason=${encodeURIComponent(reason)}` : ""}`}
+            className="mt-6 inline-flex text-sm font-semibold text-mint transition hover:text-white"
+          >
+            Enter email on upgrade page
+          </Link>
+        ) : null}
+      </div>
+
+      <div className="rounded-3xl border border-white/10 bg-[#101A20] p-6 shadow-panel sm:p-8">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-mint/12 text-mint">
+          <Lock className="h-6 w-6" aria-hidden="true" />
+        </div>
+        <h2 className="mt-7 text-3xl font-semibold text-white">Pay securely with Razorpay</h2>
+        <p className="mt-4 max-w-xl text-base leading-8 text-mist/65">
+          Razorpay Checkout supports UPI, credit card, debit card, and netbanking. Your payment order is created on the server and verified after checkout.
+        </p>
+        <div className="mt-5 flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.045] p-4 text-sm leading-6 text-mist/70">
+          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-mint" aria-hidden="true" />
+          <span>No Razorpay secret key is exposed to the browser. The server verifies the payment signature before activating Pro.</span>
+        </div>
+        {error ? <p className="mt-5 rounded-2xl bg-coral/10 p-4 text-sm text-coral">{error}</p> : null}
+        <button
+          type="button"
+          onClick={startPayment}
+          disabled={!canPay || loading}
+          className="mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-ink transition hover:-translate-y-0.5 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+        >
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+          Pay ₹799 securely
+        </button>
+      </div>
+    </section>
+  );
+}
+
+async function postJson(url, body) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(body)
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || "Request failed.");
+  return result;
+}
+
+function loadRazorpayCheckout() {
+  if (window.Razorpay) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error("Could not load Razorpay Checkout."));
+    document.body.appendChild(script);
+  });
+}

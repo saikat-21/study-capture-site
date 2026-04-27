@@ -1,0 +1,163 @@
+create extension if not exists "pgcrypto";
+create extension if not exists "citext";
+
+create table if not exists public.users (
+  id uuid primary key default gen_random_uuid(),
+  auth_user_id uuid unique references auth.users(id) on delete set null,
+  email citext not null unique,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.licenses (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references public.users(id) on delete set null,
+  email citext not null unique,
+  license_ref text unique,
+  state text not null default 'free' check (
+    state in ('free', 'paid_lifetime', 'refunded', 'chargeback', 'banned_abuse')
+  ),
+  max_devices integer not null default 3 check (max_devices > 0),
+  activated_at timestamptz,
+  expires_at timestamptz,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.devices (
+  id uuid primary key default gen_random_uuid(),
+  license_id uuid not null references public.licenses(id) on delete cascade,
+  user_id uuid references public.users(id) on delete set null,
+  device_id_hash text not null,
+  browser_name text,
+  os text,
+  extension_version text,
+  first_seen_at timestamptz not null default now(),
+  last_seen_at timestamptz not null default now(),
+  deactivated_at timestamptz,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create unique index if not exists devices_one_active_device_idx
+  on public.devices (license_id, device_id_hash)
+  where deactivated_at is null;
+
+create index if not exists devices_license_active_idx
+  on public.devices (license_id, last_seen_at desc)
+  where deactivated_at is null;
+
+create table if not exists public.payments (
+  id uuid primary key default gen_random_uuid(),
+  license_id uuid references public.licenses(id) on delete set null,
+  email citext not null,
+  provider text not null default 'placeholder',
+  provider_order_id text,
+  provider_checkout_id text,
+  provider_payment_id text,
+  provider_event_id text,
+  amount integer not null default 79900,
+  currency text not null default 'INR',
+  status text not null default 'pending' check (
+    status in ('pending', 'paid', 'failed', 'refunded', 'chargeback')
+  ),
+  source text,
+  reason text,
+  receipt text,
+  paid_at timestamptz,
+  raw_event jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table public.licenses add column if not exists license_ref text;
+create unique index if not exists licenses_license_ref_idx
+  on public.licenses (license_ref)
+  where license_ref is not null;
+
+alter table public.payments add column if not exists provider_order_id text;
+alter table public.payments add column if not exists provider_event_id text;
+alter table public.payments add column if not exists source text;
+alter table public.payments add column if not exists reason text;
+alter table public.payments add column if not exists receipt text;
+alter table public.payments add column if not exists paid_at timestamptz;
+
+create index if not exists payments_email_idx on public.payments (email);
+create index if not exists payments_provider_payment_idx on public.payments (provider, provider_payment_id);
+create unique index if not exists payments_provider_order_idx
+  on public.payments (provider_order_id);
+
+create table if not exists public.webhook_events (
+  id bigint generated always as identity primary key,
+  provider text not null,
+  event_id text not null,
+  event_type text not null,
+  provider_order_id text,
+  provider_payment_id text,
+  raw_event jsonb not null default '{}'::jsonb,
+  processed_at timestamptz not null default now(),
+  created_at timestamptz not null default now(),
+  unique (provider, event_id)
+);
+
+create table if not exists public.auth_events (
+  id bigint generated always as identity primary key,
+  event_type text not null,
+  email citext,
+  ip_hash text,
+  success boolean not null default false,
+  user_agent text,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists auth_events_rate_email_idx
+  on public.auth_events (event_type, email, created_at desc);
+
+create index if not exists auth_events_rate_ip_idx
+  on public.auth_events (event_type, ip_hash, created_at desc);
+
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists users_set_updated_at on public.users;
+create trigger users_set_updated_at
+before update on public.users
+for each row execute function public.set_updated_at();
+
+drop trigger if exists licenses_set_updated_at on public.licenses;
+create trigger licenses_set_updated_at
+before update on public.licenses
+for each row execute function public.set_updated_at();
+
+drop trigger if exists devices_set_updated_at on public.devices;
+create trigger devices_set_updated_at
+before update on public.devices
+for each row execute function public.set_updated_at();
+
+drop trigger if exists payments_set_updated_at on public.payments;
+create trigger payments_set_updated_at
+before update on public.payments
+for each row execute function public.set_updated_at();
+
+alter table public.users enable row level security;
+alter table public.licenses enable row level security;
+alter table public.devices enable row level security;
+alter table public.payments enable row level security;
+alter table public.webhook_events enable row level security;
+alter table public.auth_events enable row level security;
+
+-- No anon/authenticated table policies are created intentionally.
+-- Website API routes use SUPABASE_SERVICE_ROLE_KEY and perform ownership checks server-side.
+
+-- Razorpay payment webhooks should update public.payments to paid and upsert
+-- public.licenses as paid_lifetime with a stable SC-PRO-YYYY-XXXXXX reference.
