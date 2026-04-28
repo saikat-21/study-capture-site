@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, Loader2, Monitor, Trash2 } from "lucide-react";
+import { handleOtpPaste, normalizeOtpInput, OTP_MAX_LENGTH, OTP_PATTERN } from "../lib/otp-input";
 
 export default function ManageLicenseClient() {
   const [email, setEmail] = useState("");
@@ -77,7 +78,7 @@ export default function ManageLicenseClient() {
           <p className="text-sm font-semibold text-mint">Manage License</p>
           <h1 className="mt-4 text-4xl font-semibold text-white">Your Pro devices</h1>
           <p className="mt-5 text-base leading-8 text-mist/65">
-            Sign in with email OTP to review active browser/device activations and remove old ones.
+            Sign in with an email verification code to review active browser/device activations and remove old ones.
           </p>
           <div className="mt-7 rounded-2xl border border-mint/20 bg-mint/10 p-4 text-sm leading-7 text-mist/72">
             Study Capture Pro supports up to 3 active personal browsers/devices.
@@ -100,25 +101,29 @@ export default function ManageLicenseClient() {
                 className="w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 text-base text-white outline-none focus:border-mint/60"
                 placeholder="you@example.com"
               />
-              <ActionButton loading={loading}>Send OTP</ActionButton>
+              <ActionButton loading={loading}>Send code</ActionButton>
             </form>
           ) : null}
 
           {step === "otp" ? (
             <form onSubmit={verifyOtp} className="space-y-5">
-              <p className="text-sm text-mist/58">OTP sent to <span className="font-semibold text-white">{email}</span></p>
+              <p className="text-sm text-mist/58">Verification code sent to <span className="font-semibold text-white">{email}</span></p>
               <label className="block text-sm font-medium text-mist/75" htmlFor="manage-otp">
-                6 digit OTP
+                Verification code
               </label>
               <input
                 id="manage-otp"
                 inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern={OTP_PATTERN}
                 value={otp}
-                onChange={(event) => setOtp(event.target.value)}
+                onChange={(event) => setOtp(normalizeOtpInput(event.target.value))}
+                onPaste={(event) => handleOtpPaste(event, setOtp)}
                 required
-                maxLength={6}
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 text-base tracking-[0.35em] text-white outline-none focus:border-mint/60"
-                placeholder="123456"
+                maxLength={OTP_MAX_LENGTH}
+                className="w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 text-base tracking-[0.22em] text-white outline-none focus:border-mint/60"
+                placeholder="12345678"
+                title="Enter the verification code from your email."
               />
               <ActionButton loading={loading}>Verify and manage</ActionButton>
             </form>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, KeyRound, Loader2, Mail, Monitor, ReceiptText, ShieldCheck } from "lucide-react";
+import { handleOtpPaste, normalizeOtpInput, OTP_MAX_LENGTH, OTP_PATTERN } from "../lib/otp-input";
 import { billingEmail, billingMailto, supportEmail, supportMailto } from "../lib/site";
 
 export default function AccountClient() {
@@ -93,7 +94,7 @@ export default function AccountClient() {
       </div>
 
       {step === "email" ? (
-        <AuthCard title="Email" icon={Mail} onSubmit={sendOtp} loading={loading} buttonText="Send OTP">
+        <AuthCard title="Email" icon={Mail} onSubmit={sendOtp} loading={loading} buttonText="Send code">
           <input
             type="email"
             value={email}
@@ -107,18 +108,22 @@ export default function AccountClient() {
       ) : null}
 
       {step === "otp" ? (
-        <AuthCard title="Enter OTP" icon={KeyRound} onSubmit={verifyOtp} loading={loading} buttonText="Login">
+        <AuthCard title="Enter verification code" icon={KeyRound} onSubmit={verifyOtp} loading={loading} buttonText="Login">
           <p className="text-sm text-mist/58">
-            OTP sent to <span className="font-semibold text-white">{email}</span>
+            Verification code sent to <span className="font-semibold text-white">{email}</span>
           </p>
           <input
             inputMode="numeric"
+            autoComplete="one-time-code"
+            pattern={OTP_PATTERN}
             value={otp}
-            onChange={(event) => setOtp(event.target.value)}
+            onChange={(event) => setOtp(normalizeOtpInput(event.target.value))}
+            onPaste={(event) => handleOtpPaste(event, setOtp)}
             required
-            maxLength={6}
-            className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 text-base tracking-[0.35em] text-white outline-none focus:border-mint/60"
-            placeholder="123456"
+            maxLength={OTP_MAX_LENGTH}
+            className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 text-base tracking-[0.22em] text-white outline-none focus:border-mint/60"
+            placeholder="12345678"
+            title="Enter the verification code from your email."
           />
         </AuthCard>
       ) : null}

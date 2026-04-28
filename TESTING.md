@@ -41,7 +41,7 @@ where schemaname = 'public'
 
 ## 0.1 Supabase Numeric OTP Auth
 
-Study Capture uses numeric 6-digit email OTP only. Do not mix this with magic-link login.
+Study Capture uses numeric email verification code only. Do not mix this with magic-link login.
 
 In Supabase Dashboard, confirm:
 
@@ -59,7 +59,7 @@ Run:
 
 1. Open `https://studycapture.co/login`.
 2. Enter an email.
-3. Confirm the email contains a 6-digit numeric code.
+3. Confirm the email contains a numeric verification code.
 4. Enter the code on `/login`.
 5. Confirm the account page opens.
 
@@ -394,7 +394,7 @@ Expected:
 
 1. Open `https://studycapture.co/admin/debug`.
 2. Login with `founder@studycapture.co`.
-3. Verify OTP.
+3. Verify the email code.
 
 Confirm the page shows:
 

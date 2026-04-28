@@ -39,9 +39,9 @@ Keep `SUPABASE_SERVICE_ROLE_KEY`, `LICENSE_TOKEN_SECRET`, `DEVICE_HASH_SECRET`, 
 
 ## Auth / OTP
 
-Study Capture uses one auth flow only: numeric 6-digit email OTP.
+Study Capture uses one auth flow only: numeric email verification code.
 
-Do not use magic links for Study Capture login. The UI expects a 6-digit code, and `/api/auth/verify-otp` verifies that code with Supabase `verifyOtp({ type: "email" })`.
+Do not use magic links for Study Capture login. The UI accepts a numeric 6-8 digit verification code, and `/api/auth/verify-otp` verifies the full token with Supabase `verifyOtp({ type: "email" })`.
 
 The site uses these backend routes:
 
@@ -83,15 +83,15 @@ In Supabase Dashboard:
 1. Open `Authentication`.
 2. Open `Email Templates`.
 3. Open the `Magic Link` template. Supabase labels this template `Magic Link`, but Study Capture configures it as numeric OTP only.
-4. Replace the link-based content with a numeric OTP template that includes `{{ .Token }}`.
+4. Replace the link-based content with a numeric verification-code template that includes `{{ .Token }}`.
 5. Remove `{{ .ConfirmationURL }}` entirely from the template so the email does not present a signup/login link.
 
 Use `supabase/email-otp-template.html`, or paste this minimal template:
 
 ```html
-<h2>Study Capture login code</h2>
-<p>Your 6-digit code is: <strong>{{ .Token }}</strong></p>
-<p>Enter this code on the Study Capture login screen.</p>
+<h2>Study Capture verification code</h2>
+<p>Your verification code is: <strong>{{ .Token }}</strong></p>
+<p>Enter this verification code on the Study Capture login screen.</p>
 ```
 
 Supabase documents this behavior in its [`signInWithOtp` reference](https://supabase.com/docs/reference/javascript/auth-signinwithotp): the email sends a magic link when the template uses `{{ .ConfirmationURL }}`, and sends a code when it uses `{{ .Token }}`.

@@ -13,6 +13,7 @@ import {
   RefreshCw,
   ShieldCheck
 } from "lucide-react";
+import { handleOtpPaste, normalizeOtpInput, OTP_MAX_LENGTH, OTP_PATTERN } from "../lib/otp-input";
 
 export default function AdminDebugClient() {
   const [email, setEmail] = useState("");
@@ -102,7 +103,7 @@ export default function AdminDebugClient() {
       </div>
 
       {step === "email" ? (
-        <AuthPanel title="Founder email" icon={Mail} onSubmit={sendOtp} loading={loading} buttonText="Send OTP">
+        <AuthPanel title="Founder email" icon={Mail} onSubmit={sendOtp} loading={loading} buttonText="Send code">
           <input
             type="email"
             value={email}
@@ -116,18 +117,22 @@ export default function AdminDebugClient() {
       ) : null}
 
       {step === "otp" ? (
-        <AuthPanel title="Verify OTP" icon={KeyRound} onSubmit={verifyOtp} loading={loading} buttonText="Open debug">
+        <AuthPanel title="Verify code" icon={KeyRound} onSubmit={verifyOtp} loading={loading} buttonText="Open debug">
           <p className="text-sm text-mist/58">
-            OTP sent to <span className="font-semibold text-white">{email}</span>
+            Verification code sent to <span className="font-semibold text-white">{email}</span>
           </p>
           <input
             inputMode="numeric"
+            autoComplete="one-time-code"
+            pattern={OTP_PATTERN}
             value={otp}
-            onChange={(event) => setOtp(event.target.value)}
+            onChange={(event) => setOtp(normalizeOtpInput(event.target.value))}
+            onPaste={(event) => handleOtpPaste(event, setOtp)}
             required
-            maxLength={6}
-            className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 text-base tracking-[0.35em] text-white outline-none focus:border-mint/60"
-            placeholder="123456"
+            maxLength={OTP_MAX_LENGTH}
+            className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 text-base tracking-[0.22em] text-white outline-none focus:border-mint/60"
+            placeholder="12345678"
+            title="Enter the verification code from your email."
           />
         </AuthPanel>
       ) : null}

@@ -52,7 +52,7 @@ export async function POST(request) {
     }
 
     return ok({
-      message: "OTP sent. Check your inbox for the 6 digit code."
+      message: "Verification code sent. Check your inbox."
     });
   } catch (error) {
     if (email && rateLimitContext?.supabase && !eventRecorded) {

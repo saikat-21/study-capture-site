@@ -27,7 +27,7 @@ See `TESTING.md` for the Razorpay-focused checklist. Keep these broader checks a
 
 ## Extension API
 
-- Verify OTP through `/api/auth/verify-otp` and store the returned access token.
+- Verify the email code through `/api/auth/verify-otp` and store the returned access token.
 - Call `/api/license/activate` with `Authorization: Bearer <access_token>`.
 - Confirm unpaid emails return `license_not_paid`.
 - Confirm paid emails activate up to 3 devices.

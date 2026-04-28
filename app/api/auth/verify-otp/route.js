@@ -47,7 +47,7 @@ export async function POST(request) {
     eventRecorded = true;
 
     if (error || !data?.session || !data?.user) {
-      throw new HttpError(401, "otp_invalid", "The OTP is invalid or expired.");
+      throw new HttpError(401, "otp_invalid", "The verification code is invalid or expired.");
     }
 
     const service = createSupabaseServiceClient();

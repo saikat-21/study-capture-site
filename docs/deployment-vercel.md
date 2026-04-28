@@ -59,7 +59,7 @@ The Razorpay flow works with the in-memory mock DB when Supabase is not configur
 
 ## Supabase Auth
 
-Study Capture uses numeric 6-digit email OTP only.
+Study Capture uses numeric email verification code only.
 
 In Supabase Dashboard, set:
 
@@ -70,7 +70,7 @@ In Supabase Dashboard, set:
   - `https://studycapture.co/login`
   - `https://www.studycapture.co/login`
 
-In `Authentication > Email Templates`, open the template labelled `Magic Link`, replace the link-based content with the numeric OTP template containing `{{ .Token }}`, and remove `{{ .ConfirmationURL }}` entirely. See `supabase/email-otp-template.html`.
+In `Authentication > Email Templates`, open the template labelled `Magic Link`, replace the link-based content with the numeric verification-code template containing `{{ .Token }}`, and remove `{{ .ConfirmationURL }}` entirely. See `supabase/email-otp-template.html`.
 
 ## Admin
 

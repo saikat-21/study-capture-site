@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Users
 } from "lucide-react";
+import { handleOtpPaste, normalizeOtpInput, OTP_MAX_LENGTH, OTP_PATTERN } from "../lib/otp-input";
 
 const LICENSE_STATES = [
   "paid_lifetime",
@@ -114,7 +115,7 @@ export default function AdminDashboardClient() {
             Study Capture Admin
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-mist/62">
-            OTP-protected operations dashboard for Supabase users, payments, licenses, devices, and Razorpay confirmations.
+            Verification-code protected operations dashboard for Supabase users, payments, licenses, devices, and Razorpay confirmations.
           </p>
         </div>
         {dashboard?.adminEmail ? (
@@ -136,7 +137,7 @@ export default function AdminDashboardClient() {
           icon={Mail}
           onSubmit={sendOtp}
           loading={loading}
-          buttonText="Send OTP"
+          buttonText="Send code"
         >
           <input
             type="email"
@@ -152,23 +153,27 @@ export default function AdminDashboardClient() {
 
       {step === "otp" ? (
         <AuthPanel
-          title="Verify OTP"
+          title="Verify code"
           icon={KeyRound}
           onSubmit={verifyOtp}
           loading={loading}
           buttonText="Open dashboard"
         >
           <p className="text-sm text-mist/58">
-            OTP sent to <span className="font-semibold text-white">{email}</span>
+            Verification code sent to <span className="font-semibold text-white">{email}</span>
           </p>
           <input
             inputMode="numeric"
+            autoComplete="one-time-code"
+            pattern={OTP_PATTERN}
             value={otp}
-            onChange={(event) => setOtp(event.target.value)}
+            onChange={(event) => setOtp(normalizeOtpInput(event.target.value))}
+            onPaste={(event) => handleOtpPaste(event, setOtp)}
             required
-            maxLength={6}
-            className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 text-base tracking-[0.35em] text-white outline-none focus:border-mint/60"
-            placeholder="123456"
+            maxLength={OTP_MAX_LENGTH}
+            className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 text-base tracking-[0.22em] text-white outline-none focus:border-mint/60"
+            placeholder="12345678"
+            title="Enter the verification code from your email."
           />
         </AuthPanel>
       ) : null}
