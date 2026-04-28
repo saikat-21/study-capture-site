@@ -99,7 +99,7 @@ export async function POST(request) {
       email,
       paymentId: payment.provider_payment_id,
       paymentRecordId: payment.id,
-      rawEvent: event
+      rawEvent: payment.raw_event
     });
 
     if (!license.already_active) {

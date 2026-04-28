@@ -13,6 +13,11 @@ import { billingEmail } from "../lib/site";
 
 const CHECKOUT_KEY = "studyCaptureCheckout";
 const SUCCESS_KEY = "studyCapturePaymentSuccess";
+const DEFAULT_PRICING = {
+  test_mode: false,
+  paid_price_inr: 799,
+  public_price_inr: 799
+};
 
 export default function CheckoutClient() {
   const router = useRouter();
@@ -24,7 +29,11 @@ export default function CheckoutClient() {
 
   const source = searchParams.get("src") || "website";
   const reason = searchParams.get("reason") || "direct";
+  const testMode = searchParams.get("test") || "";
+  const testToken = searchParams.get("token") || "";
   const handoff = useMemo(() => getExtensionHandoff(searchParams), [searchParams]);
+  const [pricing, setPricing] = useState(DEFAULT_PRICING);
+  const [pricingLoading, setPricingLoading] = useState(Boolean(testMode || testToken));
 
   useEffect(() => {
     const stored = window.sessionStorage.getItem(CHECKOUT_KEY);
@@ -38,7 +47,47 @@ export default function CheckoutClient() {
     }
   }, []);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadPricing() {
+      if (!testMode && !testToken) {
+        setPricing(DEFAULT_PRICING);
+        setPricingLoading(false);
+        return;
+      }
+
+      setPricingLoading(true);
+      try {
+        const pricingParams = new URLSearchParams();
+        if (testMode) pricingParams.set("test", testMode);
+        if (testToken) pricingParams.set("token", testToken);
+        const response = await fetch(
+          `/api/checkout/price?${pricingParams.toString()}`,
+          { signal: controller.signal }
+        );
+        const result = await response.json();
+        if (response.ok) {
+          setPricing(result);
+        } else {
+          setPricing(DEFAULT_PRICING);
+        }
+      } catch (err) {
+        if (err.name !== "AbortError") setPricing(DEFAULT_PRICING);
+      } finally {
+        if (!controller.signal.aborted) setPricingLoading(false);
+      }
+    }
+
+    loadPricing();
+    return () => controller.abort();
+  }, [testMode, testToken]);
+
   const canPay = useMemo(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email), [email]);
+  const canStartPayment = canPay && !pricingLoading;
+  const displayPrice = pricing.test_mode
+    ? pricing.paid_price_inr
+    : pricing.public_price_inr || DEFAULT_PRICING.public_price_inr;
 
   async function startPayment() {
     setError("");
@@ -55,7 +104,9 @@ export default function CheckoutClient() {
       const order = await postJson("/api/razorpay/create-order", {
         email,
         source,
-        reason
+        reason,
+        test: testMode,
+        token: testToken
       });
 
       const checkout = new window.Razorpay({
@@ -111,6 +162,9 @@ export default function CheckoutClient() {
                 source,
                 extensionId: handoff.extensionId,
                 extensionHandoff,
+                testMode: Boolean(order.test_mode),
+                paidPriceInr: order.paid_price_inr,
+                originalPriceInr: order.original_price_inr,
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 paidAt: new Date().toISOString()
@@ -175,9 +229,14 @@ export default function CheckoutClient() {
     <section className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[0.85fr_1.15fr]">
       <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-6 shadow-panel sm:p-8">
         <p className="text-sm font-semibold text-mint">Checkout</p>
+        {pricing.test_mode ? (
+          <div className="mt-5 rounded-2xl border border-mint/25 bg-mint/10 px-4 py-3 text-sm font-semibold text-mint">
+            Founder live test mode — ₹{pricing.paid_price_inr}
+          </div>
+        ) : null}
         <h1 className="mt-4 text-4xl font-semibold text-white">Study Capture Pro Lifetime</h1>
         <div className="mt-7 flex items-end gap-3">
-          <span className="text-5xl font-semibold text-white">₹799</span>
+          <span className="text-5xl font-semibold text-white">₹{displayPrice}</span>
           <span className="pb-2 text-sm text-mist/55">one-time payment</span>
         </div>
         <div className="mt-8 rounded-2xl border border-mint/20 bg-mint/10 p-4">
@@ -191,7 +250,7 @@ export default function CheckoutClient() {
         </div>
         {!canPay ? (
           <Link
-            href={buildUpgradeReturnHref({ source, reason, extensionId: handoff.extensionId })}
+            href={buildUpgradeReturnHref({ source, reason, extensionId: handoff.extensionId, testMode, testToken })}
             className="mt-6 inline-flex text-sm font-semibold text-mint transition hover:text-white"
           >
             Enter email on upgrade page
@@ -215,11 +274,11 @@ export default function CheckoutClient() {
         <button
           type="button"
           onClick={startPayment}
-          disabled={!canPay || loading}
+          disabled={!canStartPayment || loading}
           className="mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-ink transition hover:-translate-y-0.5 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
-          Pay ₹799 securely
+          {pricingLoading ? "Preparing secure checkout" : `Pay ₹${displayPrice} securely`}
         </button>
       </div>
     </section>
@@ -255,11 +314,13 @@ function buildCheckoutError(error) {
   return error.message || "Request failed.";
 }
 
-function buildUpgradeReturnHref({ source, reason, extensionId }) {
+function buildUpgradeReturnHref({ source, reason, extensionId, testMode, testToken }) {
   const params = new URLSearchParams();
   params.set("src", source || "website");
   if (reason && reason !== "direct") params.set("reason", reason);
   if (extensionId) params.set("extId", extensionId);
+  if (testMode) params.set("test", testMode);
+  if (testToken) params.set("token", testToken);
   return `/upgrade?${params.toString()}`;
 }
 

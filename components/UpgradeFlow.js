@@ -1,30 +1,64 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ArrowRight, Check, Loader2, Mail } from "lucide-react";
 
-const ALLOWED_PARAMS = ["src", "reason", "extId"];
 const CHECKOUT_KEY = "studyCaptureCheckout";
-
-function preservedParams(searchParams) {
-  const params = new URLSearchParams();
-
-  ALLOWED_PARAMS.forEach((key) => {
-    const value = searchParams.get(key);
-    if (value) params.set(key, value);
-  });
-
-  return params;
-}
+const DEFAULT_PRICING = {
+  test_mode: false,
+  paid_price_inr: 799,
+  public_price_inr: 799
+};
 
 export default function UpgradeFlow() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const query = useMemo(() => preservedParams(searchParams), [searchParams]);
+  const query = useMemo(
+    () => new URLSearchParams(searchParams.toString()),
+    [searchParams]
+  );
+  const testMode = query.get("test") || "";
+  const testToken = query.get("token") || "";
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [pricing, setPricing] = useState(DEFAULT_PRICING);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadPricing() {
+      if (!testMode && !testToken) {
+        setPricing(DEFAULT_PRICING);
+        return;
+      }
+
+      try {
+        const pricingParams = new URLSearchParams();
+        if (testMode) pricingParams.set("test", testMode);
+        if (testToken) pricingParams.set("token", testToken);
+        const response = await fetch(
+          `/api/checkout/price?${pricingParams.toString()}`,
+          { signal: controller.signal }
+        );
+        const result = await response.json();
+        if (response.ok) {
+          setPricing(result);
+        } else {
+          setPricing(DEFAULT_PRICING);
+        }
+      } catch (err) {
+        if (err.name !== "AbortError") setPricing(DEFAULT_PRICING);
+      }
+    }
+
+    loadPricing();
+    return () => controller.abort();
+  }, [testMode, testToken]);
+
+  const displayPrice = pricing.test_mode
+    ? pricing.paid_price_inr
+    : pricing.public_price_inr || DEFAULT_PRICING.public_price_inr;
 
   function continueToCheckout(event) {
     event.preventDefault();
@@ -39,26 +73,36 @@ export default function UpgradeFlow() {
       return;
     }
 
+    const { params: checkoutParams, search } = getCurrentUpgradeSearch(query);
+    const checkoutTarget = `/checkout${search}`;
+
     window.sessionStorage.setItem(
       CHECKOUT_KEY,
       JSON.stringify({
         email: normalizedEmail,
-        source: query.get("src") || "website",
-        reason: query.get("reason") || "direct",
-        extensionId: query.get("extId") || "",
+        source: checkoutParams.get("src") || "website",
+        reason: checkoutParams.get("reason") || "direct",
+        extensionId: checkoutParams.get("extId") || "",
         enteredAt: new Date().toISOString()
       })
     );
 
-    router.push(`/checkout${query.toString() ? `?${query.toString()}` : ""}`);
+    console.log("upgrade params =", search || window.location.search);
+    console.log("checkout redirect =", checkoutTarget);
+    window.location.assign(checkoutTarget);
   }
 
   return (
     <div className="grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
       <section className="rounded-3xl border border-white/10 bg-white/[0.045] p-6 shadow-panel sm:p-8">
         <p className="text-sm font-semibold text-mint">Study Capture Pro Lifetime</p>
+        {pricing.test_mode ? (
+          <div className="mt-5 rounded-2xl border border-mint/25 bg-mint/10 px-4 py-3 text-sm font-semibold text-mint">
+            Founder live test mode — ₹{pricing.paid_price_inr}
+          </div>
+        ) : null}
         <div className="mt-6 flex flex-wrap items-end gap-3">
-          <h1 className="text-5xl font-semibold text-white">₹799</h1>
+          <h1 className="text-5xl font-semibold text-white">₹{displayPrice}</h1>
           <p className="pb-2 text-sm font-medium text-mist/58">Founder Price · one time</p>
         </div>
         <p className="mt-6 text-lg leading-8 text-mist/72">
@@ -123,4 +167,20 @@ export default function UpgradeFlow() {
       </section>
     </div>
   );
+}
+
+function getCurrentUpgradeSearch(fallbackParams) {
+  if (typeof window === "undefined") {
+    const params = new URLSearchParams(fallbackParams.toString());
+    const search = params.toString() ? `?${params.toString()}` : "";
+    return { params, search };
+  }
+
+  const liveSearch = window.location.search || "";
+  const params = new URLSearchParams(liveSearch);
+  if (liveSearch) return { params, search: liveSearch };
+
+  const fallback = new URLSearchParams(fallbackParams.toString());
+  const search = fallback.toString() ? `?${fallback.toString()}` : "";
+  return { params: fallback, search };
 }

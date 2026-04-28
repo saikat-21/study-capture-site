@@ -11,6 +11,10 @@ NEXT_PUBLIC_RAZORPAY_KEY_ID=<same live key id>
 RAZORPAY_WEBHOOK_SECRET=<webhook secret you create in Razorpay>
 NEXT_PUBLIC_SITE_URL=https://studycapture.co
 NEXT_PUBLIC_BILLING_EMAIL=billing@studycapture.co
+PUBLIC_PRICE_INR=799
+ENABLE_INTERNAL_TEST_PAYMENTS=false
+FOUNDER_TEST_TOKEN=
+TEST_PRICE_INR=1
 ```
 
 `RAZORPAY_KEY_SECRET` and `RAZORPAY_WEBHOOK_SECRET` must stay server-only.
@@ -40,7 +44,7 @@ In Razorpay Dashboard live mode:
 
 1. `/upgrade` captures the license email and preserves `src` and `reason`.
 2. `/checkout` calls `/api/razorpay/create-order`.
-3. The server creates a Razorpay order for `79900` paise in `INR`.
+3. The server creates a Razorpay order for the server-resolved price. Public checkout is `79900` paise in `INR`.
 4. The browser opens Razorpay Checkout using `order_id`.
 5. Checkout returns `razorpay_payment_id`, `razorpay_order_id`, and `razorpay_signature`.
 6. `/api/razorpay/verify-payment` verifies the signature with `RAZORPAY_KEY_SECRET`.
@@ -48,6 +52,16 @@ In Razorpay Dashboard live mode:
 8. A Resend-backed welcome email is sent with the license reference when `RESEND_API_KEY` is configured.
 9. `/api/razorpay/webhook` verifies `X-Razorpay-Signature` using the raw request body and handles duplicate events idempotently. Failed payments are recorded without activating a license.
 10. The extension Activate Pro flow sends the email, license reference, and device fingerprint to `/api/license/activate`; the server verifies the paid license before issuing a signed device token.
+
+## Founder Live Test Mode
+
+For an internal live Razorpay smoke test, temporarily set `ENABLE_INTERNAL_TEST_PAYMENTS=true`, set a strong `FOUNDER_TEST_TOKEN`, and redeploy. Then use:
+
+```text
+https://www.studycapture.co/upgrade?src=extension&test=1&token=<FOUNDER_TEST_TOKEN>
+```
+
+The server validates the token before creating the order. Valid founder test orders use `100` paise, save `source = internal_test`, and keep test metadata in `payments.raw_event.study_capture`. Wrong, missing, or disabled tokens stay on the public `79900` paise path. Disable by setting `ENABLE_INTERNAL_TEST_PAYMENTS=false` and redeploying.
 
 ## Persistence
 

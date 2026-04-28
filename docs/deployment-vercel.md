@@ -13,6 +13,10 @@ Set these in Vercel Project Settings:
 - `RAZORPAY_KEY_SECRET`
 - `NEXT_PUBLIC_RAZORPAY_KEY_ID`
 - `RAZORPAY_WEBHOOK_SECRET`
+- `PUBLIC_PRICE_INR=799`
+- `ENABLE_INTERNAL_TEST_PAYMENTS=false`
+- `FOUNDER_TEST_TOKEN`
+- `TEST_PRICE_INR=1`
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
@@ -28,6 +32,8 @@ Set these in Vercel Project Settings:
 - `RESEND_FROM_EMAIL=Study Capture <billing@studycapture.co>`
 
 Never expose `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `LICENSE_TOKEN_SECRET`, `DEVICE_HASH_SECRET`, `RATE_LIMIT_SECRET`, `ADMIN_EMAILS`, or `RESEND_API_KEY` with a `NEXT_PUBLIC_` prefix.
+
+Keep `ENABLE_INTERNAL_TEST_PAYMENTS=false` outside short founder-only live payment tests. When it is false, `FOUNDER_TEST_TOKEN` has no effect and public checkout stays at ₹799.
 
 ## Razorpay
 

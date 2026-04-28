@@ -27,6 +27,7 @@ Official website and Pro upgrade funnel for the Study Capture browser extension.
 - `/api/razorpay/create-order`
 - `/api/razorpay/verify-payment`
 - `/api/razorpay/webhook`
+- `/api/checkout/price`
 - `/api/admin/overview`
 - `/api/admin/licenses/update`
 - `/api/account/me`
@@ -55,6 +56,16 @@ npm run build
 ## Deployment
 
 Import this repository into Vercel. The project uses the Next.js framework preset and builds with `npm run build`.
+
+## Founder Live Test Mode
+
+Public users always see and pay the public price. For a live ₹1 founder-only payment test, set `ENABLE_INTERNAL_TEST_PAYMENTS=true`, `FOUNDER_TEST_TOKEN=<secret-random-string>`, `TEST_PRICE_INR=1`, and `PUBLIC_PRICE_INR=799` in Vercel, then open:
+
+```text
+https://www.studycapture.co/upgrade?src=extension&test=1&token=<FOUNDER_TEST_TOKEN>
+```
+
+The backend verifies the token before creating the Razorpay order. Wrong, missing, or disabled tokens fall back to ₹799.
 
 See:
 

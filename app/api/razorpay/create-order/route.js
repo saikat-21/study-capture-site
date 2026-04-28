@@ -8,8 +8,8 @@ import {
   buildRazorpayReceipt,
   createRazorpayOrder,
   getRazorpayKeyId,
-  PRO_AMOUNT,
-  PRO_CURRENCY
+  PRO_CURRENCY,
+  resolveCheckoutPricing
 } from "../../../../lib/server/razorpay";
 import { maybeAssertRateLimit, maybeRecordAuthEvent } from "../../../../lib/server/rate-limit";
 import { normalizeEmail, normalizeOptionalString } from "../../../../lib/server/validation";
@@ -34,6 +34,16 @@ export async function POST(request) {
     email = normalizeEmail(body.email);
     const source = normalizeSource(body.source);
     const reason = normalizeReason(body.reason);
+    const pricing = resolveCheckoutPricing({
+      testMode: normalizeOptionalString(body.test, 40),
+      testToken: normalizeOptionalString(body.token, 200)
+    });
+    const paymentSource = pricing.testMode ? "internal_test" : source;
+    const pricingMetadata = {
+      ...pricing.metadata,
+      source: paymentSource,
+      original_source: source
+    };
     rateLimitContext = await maybeAssertRateLimit({
       request,
       email,
@@ -63,16 +73,18 @@ export async function POST(request) {
       );
     }
 
-    const receipt = buildRazorpayReceipt({ email, source });
+    const receipt = buildRazorpayReceipt({ email, source: paymentSource });
 
     const razorpayOrder = await createRazorpayOrder({
       email,
-      source,
+      source: paymentSource,
       reason,
-      receipt
+      receipt,
+      amount: pricing.amount,
+      pricingMetadata
     });
 
-    if (razorpayOrder.amount !== PRO_AMOUNT || razorpayOrder.currency !== PRO_CURRENCY) {
+    if (razorpayOrder.amount !== pricing.amount || razorpayOrder.currency !== PRO_CURRENCY) {
       throw new HttpError(
         502,
         "razorpay_order_mismatch",
@@ -82,10 +94,11 @@ export async function POST(request) {
 
     await createPendingOrder({
       email,
-      source,
+      source: paymentSource,
       reason,
       razorpayOrder,
-      receipt
+      receipt,
+      metadata: pricingMetadata
     });
 
     await maybeRecordAuthEvent({
@@ -95,9 +108,11 @@ export async function POST(request) {
       eventType: "payment_order_create",
       success: true,
       metadata: {
-        source,
+        source: paymentSource,
+        originalSource: source,
         reason,
-        providerOrderId: razorpayOrder.id
+        providerOrderId: razorpayOrder.id,
+        testMode: pricing.testMode
       }
     });
 
@@ -105,7 +120,11 @@ export async function POST(request) {
       order_id: razorpayOrder.id,
       amount: razorpayOrder.amount,
       currency: razorpayOrder.currency,
-      key_id: getRazorpayKeyId()
+      key_id: getRazorpayKeyId(),
+      test_mode: pricing.testMode,
+      public_price_inr: pricing.publicPriceInr,
+      original_price_inr: pricing.originalPriceInr,
+      paid_price_inr: pricing.paidPriceInr
     });
   } catch (error) {
     await maybeRecordAuthEvent({
