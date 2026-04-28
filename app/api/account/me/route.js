@@ -29,7 +29,18 @@ export async function GET(request) {
       user: profile,
       plan: licensePlanForState(license?.state),
       licenseState: license?.state || "free",
-      license,
+      license: license
+        ? {
+            id: license.id,
+            email: license.email,
+            state: license.state,
+            max_devices: license.max_devices,
+            activated_at: license.activated_at,
+            expires_at: license.expires_at,
+            created_at: license.created_at,
+            updated_at: license.updated_at
+          }
+        : null,
       subscription,
       payments,
       activeDevices,

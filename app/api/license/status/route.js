@@ -5,7 +5,11 @@ import {
 } from "../../../../lib/db";
 import { getAuthenticatedUser } from "../../../../lib/server/auth";
 import { fail, ok } from "../../../../lib/server/errors";
-import { hashDeviceId, verifyLicenseToken } from "../../../../lib/server/license-token";
+import {
+  hashDeviceId,
+  signActivationGrant,
+  verifyLicenseToken
+} from "../../../../lib/server/license-token";
 import {
   ensureProfileForAuthUser,
   getLicenseByEmail as getSupabaseLicenseByEmail,
@@ -58,6 +62,13 @@ export async function GET(request) {
       }
     }
 
+    const activationGrant = plan === "pro"
+      ? signActivationGrant({
+          email: auth.email,
+          licenseId: license?.id || null
+        })
+      : null;
+
     return ok({
       email: auth.email,
       plan,
@@ -67,7 +78,8 @@ export async function GET(request) {
       licenseActive: plan === "pro",
       status: plan === "pro" ? "active" : "inactive",
       subscriptionStatus: subscription?.status || (plan === "pro" ? "active" : "none"),
-      licenseRef: license?.license_ref || null,
+      activationGrant: activationGrant?.token || null,
+      activationGrantExpiresAt: activationGrant?.payload.activationGrantExpiresAt || null,
       activeDeviceCount: activeDevices.length,
       deviceStatus,
       activeDevices
@@ -81,10 +93,17 @@ async function getSignedLicenseStatus(payload, accessToken) {
   const license = await getDbLicenseByEmail(payload.email);
   const subscription = await getSubscriptionByEmail(payload.email);
   const activeDevices = license ? await listActiveDevicesForLicense(license) : [];
+  const tokenMatchesLicense =
+    Boolean(license) &&
+    (
+      (payload.licenseId && license.id && payload.licenseId === license.id) ||
+      (payload.licenseId && !license.id && payload.licenseId === license.license_ref) ||
+      (payload.licenseRef && license.license_ref === payload.licenseRef)
+    );
   const licenseIsActive =
     Boolean(license) &&
     license.state === "paid_lifetime" &&
-    license.license_ref === payload.licenseRef &&
+    tokenMatchesLicense &&
     (!subscription || subscription.status === "active");
   const deviceIsActive =
     licenseIsActive &&
@@ -97,7 +116,6 @@ async function getSignedLicenseStatus(payload, accessToken) {
     licenseState: license?.state || "free",
     subscriptionStatus: subscription?.status || "none",
     subscriptionPlan: subscription?.plan || null,
-    licenseRef: payload.licenseRef,
     maxDevices: license?.max_devices || payload.maxDevices || 3,
     active,
     licenseActive: active,

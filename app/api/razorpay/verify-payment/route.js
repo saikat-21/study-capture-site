@@ -5,6 +5,7 @@ import {
 } from "../../../../lib/db";
 import { sendWelcomeEmail } from "../../../../lib/server/email";
 import { fail, HttpError, ok, readJson } from "../../../../lib/server/errors";
+import { signActivationGrant } from "../../../../lib/server/license-token";
 import { verifyRazorpayPaymentSignature } from "../../../../lib/server/razorpay";
 import { maybeAssertRateLimit, maybeRecordAuthEvent } from "../../../../lib/server/rate-limit";
 import {
@@ -85,8 +86,13 @@ export async function POST(request) {
     });
 
     if (!license.already_active) {
-      await sendWelcomeEmail(email, license.license_ref);
+      await sendWelcomeEmail(email);
     }
+
+    const activationGrant = signActivationGrant({
+      email,
+      licenseId: license.id || null
+    });
 
     await maybeRecordAuthEvent({
       supabase: rateLimitContext?.supabase,
@@ -105,7 +111,8 @@ export async function POST(request) {
       message: "Payment verified. Study Capture Pro is active.",
       email,
       plan: "pro",
-      licenseRef: license.license_ref
+      activationGrant: activationGrant.token,
+      activationGrantExpiresAt: activationGrant.payload.activationGrantExpiresAt
     });
   } catch (error) {
     await maybeRecordAuthEvent({

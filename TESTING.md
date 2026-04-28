@@ -105,7 +105,7 @@ Run:
 5. Confirm checkout shows `Founder live test mode — ₹1`.
 6. Click `Pay ₹1 securely`.
 7. Complete Razorpay Checkout using the same live production flow.
-8. Confirm `/success` shows the license reference and extension handoff behavior.
+8. Confirm `/success` shows the paid email, welcome copy, and extension handoff behavior.
 9. In Supabase `payments`, confirm:
    - `source = internal_test`
    - `amount = 100`
@@ -148,7 +148,7 @@ Disable after testing:
 2. Confirm the opened URL starts with `https://www.studycapture.co/upgrade?src=extension`.
 3. Confirm the URL includes `extId`.
 4. Complete checkout with a fresh paid email.
-5. Confirm `/success` shows the Pro email and license reference.
+5. Confirm `/success` shows the Pro email without any customer-facing license code/reference.
 6. Confirm the success page says Study Capture Pro is active in the extension.
 7. Reopen the extension and confirm the badge shows `PRO`.
 
@@ -157,7 +157,7 @@ Expected:
 - Checkout copy says `Secure payment powered by Razorpay. Your license will be linked to this email.`
 - No developer/security implementation text is shown to customers.
 - The extension receives a server-verified license token through the website handoff.
-- Manual license code is still available only as a fallback.
+- The extension receives a short-lived activation grant from the website, then exchanges it server-side for a signed device token.
 
 ## 1.2 Extension Restore Handoff
 
@@ -260,16 +260,16 @@ Confirm:
 - `max_devices = 3`
 - `activated_at` is not null
 
-## 5. Success Page Shows License Reference
+## 5. Success Page Shows Pro Access
 
 After payment, confirm `/success` shows:
 
 - “Excellent choice — welcome to Study Capture Pro.”
 - Pro active for the paid email.
-- License reference matching the Supabase `licenses.license_ref`.
-- Next steps mention extension activation with the same email and license reference.
+- No customer-facing `SC-PRO` reference or license code.
+- Next steps mention extension activation with the same paid email.
 
-## 6. Welcome / License Email Sent
+## 6. Welcome Email Sent
 
 Check the paid email inbox.
 
@@ -278,7 +278,7 @@ Confirm the welcome email:
 - Subject: `Welcome to Study Capture Pro — License Activated 🎉`
 - Sent from the configured Resend sender.
 - Includes the paid email.
-- Includes the same `SC-PRO-YYYY-XXXXXX` license reference.
+- Does not include a reusable license code/reference.
 - Includes `billing@studycapture.co` for billing/refunds/invoices/license purchase questions.
 - Includes `support@studycapture.co` for product help.
 
@@ -293,8 +293,8 @@ If no email arrives:
 1. Install/open the Study Capture extension.
 2. Click `Activate Pro`.
 3. Enter the paid email.
-4. Enter the `SC-PRO-YYYY-XXXXXX` license reference.
-5. Submit activation.
+4. Verify the email OTP on the Study Capture website.
+5. Confirm the website returns to the extension through handoff.
 6. Confirm the extension switches from Free to Pro.
 7. Confirm Pro-only features unlock:
    - Unlimited PDF exports
@@ -325,7 +325,7 @@ Confirm one active device exists with `deactivated_at is null`.
 
 ## 8. 3-Device Limit Works
 
-Activate Pro with the same paid email/license reference on three distinct browser profiles/devices.
+Activate Pro with the same paid email on three distinct browser profiles/devices.
 
 Confirm:
 
@@ -344,7 +344,7 @@ Expected:
 
 ## 9. 4th Device Blocked
 
-Activate Pro on a fourth distinct browser profile/device using the same email/license reference.
+Activate Pro on a fourth distinct browser profile/device using the same paid email.
 
 Expected extension result:
 
@@ -373,7 +373,7 @@ Expected:
 
 - Razorpay Checkout does not open.
 - `/api/razorpay/create-order` returns `409 already_pro`.
-- The checkout page tells the user the email already has Pro and shows the existing license reference when available.
+- The checkout page tells the user the email already has Pro and points them to email-based restore.
 
 Confirm no new pending order was created:
 
@@ -527,7 +527,7 @@ Release is ready when all are true:
 - Supabase `payments.status = paid`.
 - Supabase `subscriptions.status = active`.
 - Supabase `licenses.state = paid_lifetime`.
-- `/success` shows license reference.
+- `/success` shows paid email and no customer-facing license reference.
 - Welcome/license email received.
 - Extension activates Pro.
 - 3 active devices allowed.

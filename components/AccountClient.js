@@ -145,11 +145,6 @@ export default function AccountClient() {
               <p className="mt-1 text-sm text-mist/62">
                 Subscription: {account.subscription?.status || "none"}
               </p>
-              {account.license?.license_ref ? (
-                <p className="mt-4 rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold text-white">
-                  {account.license.license_ref}
-                </p>
-              ) : null}
             </div>
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <Link

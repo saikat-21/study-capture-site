@@ -4,7 +4,11 @@ import {
   getSubscriptionByEmail
 } from "../../../../lib/db";
 import { fail, HttpError, ok, readJson } from "../../../../lib/server/errors";
-import { hashDeviceId, signLicenseToken } from "../../../../lib/server/license-token";
+import {
+  hashDeviceId,
+  signLicenseToken,
+  verifyActivationGrant
+} from "../../../../lib/server/license-token";
 import { assertRateLimit, recordAuthEvent } from "../../../../lib/server/rate-limit";
 import {
   normalizeEmail,
@@ -23,8 +27,32 @@ export async function POST(request) {
 
   try {
     const body = await readJson(request);
-    email = normalizeEmail(body.email);
-    const licenseRef = normalizeLicenseRef(body.licenseRef || body.license_ref);
+    const activationGrant = normalizeOptionalString(
+      body.activationGrant || body.activation_grant || body.grant,
+      1200
+    );
+    const grantPayload = activationGrant ? verifyActivationGrant(activationGrant) : null;
+
+    if (activationGrant && !grantPayload) {
+      throw new HttpError(
+        401,
+        "invalid_activation_grant",
+        "Your activation session expired. Verify your email again."
+      );
+    }
+
+    email = grantPayload?.email
+      ? normalizeEmail(grantPayload.email)
+      : normalizeEmail(body.email);
+    const requestedEmail = body.email ? normalizeEmail(body.email) : email;
+    if (requestedEmail !== email) {
+      throw new HttpError(
+        403,
+        "activation_email_mismatch",
+        "Activation email does not match this verified session."
+      );
+    }
+    const legacyLicenseRef = normalizeOptionalLicenseRef(body.licenseRef || body.license_ref);
     const deviceId = normalizeRequiredString(body.deviceId, "deviceId", 256);
     const browserName =
       normalizeOptionalString(body.browserName, 80) ||
@@ -50,11 +78,19 @@ export async function POST(request) {
       );
     }
 
-    if (!license.license_ref || license.license_ref !== licenseRef) {
+    if (grantPayload?.licenseId && license.id && grantPayload.licenseId !== license.id) {
+      throw new HttpError(
+        403,
+        "activation_license_mismatch",
+        "Activation session does not match this license."
+      );
+    }
+
+    if (!grantPayload && (!legacyLicenseRef || license.license_ref !== legacyLicenseRef)) {
       throw new HttpError(
         401,
         "invalid_license_reference",
-        "Enter the license reference from your Study Capture Pro receipt."
+        "Verify your email on the Study Capture website to activate Pro."
       );
     }
 
@@ -80,7 +116,6 @@ export async function POST(request) {
       plan: "pro",
       licenseState: license.state,
       licenseId: license.id || license.license_ref,
-      licenseRef: license.license_ref,
       deviceIdHash,
       maxDevices: activation.maxDevices
     });
@@ -91,7 +126,8 @@ export async function POST(request) {
       email,
       success: true,
       metadata: {
-        licenseRef,
+        licenseId: license.id || null,
+        legacyLicenseReferenceUsed: Boolean(!grantPayload && legacyLicenseRef),
         browserName,
         os,
         extensionVersion,
@@ -105,7 +141,6 @@ export async function POST(request) {
       plan: "pro",
       licenseState: license.state,
       subscriptionStatus: subscription?.status || "active",
-      licenseRef: license.license_ref,
       maxDevices: activation.maxDevices,
       device: activation.device,
       accessToken: signedLicense.token,
@@ -125,7 +160,8 @@ export async function POST(request) {
   }
 }
 
-function normalizeLicenseRef(value) {
+function normalizeOptionalLicenseRef(value) {
+  if (value == null) return null;
   const ref = normalizeRequiredString(value, "licenseRef", 40)
     .toUpperCase()
     .replace(/\s+/g, "");
@@ -134,7 +170,7 @@ function normalizeLicenseRef(value) {
     throw new HttpError(
       400,
       "invalid_license_reference",
-      "Enter a valid Study Capture Pro license reference."
+      "Verify your email on the Study Capture website to activate Pro."
     );
   }
 

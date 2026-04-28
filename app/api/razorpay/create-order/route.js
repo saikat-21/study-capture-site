@@ -65,10 +65,9 @@ export async function POST(request) {
       throw new HttpError(
         409,
         "already_pro",
-        "This email already has Study Capture Pro active. Use the existing license reference to activate Pro.",
+        "This email already has Study Capture Pro active. Use the same email to restore Pro.",
         {
-          email,
-          licenseRef: existingLicense.license_ref || null
+          email
         }
       );
     }

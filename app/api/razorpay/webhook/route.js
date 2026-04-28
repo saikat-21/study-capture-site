@@ -103,7 +103,7 @@ export async function POST(request) {
     });
 
     if (!license.already_active) {
-      await sendWelcomeEmail(email, license.license_ref);
+      await sendWelcomeEmail(email);
     }
 
     await markWebhookEventProcessed({
@@ -117,8 +117,7 @@ export async function POST(request) {
     return ok({
       message: "Webhook processed.",
       eventId,
-      eventType,
-      licenseRef: license.license_ref
+      eventType
     });
   } catch (error) {
     return fail(error);

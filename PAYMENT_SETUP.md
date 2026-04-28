@@ -48,10 +48,10 @@ In Razorpay Dashboard live mode:
 4. The browser opens Razorpay Checkout using `order_id`.
 5. Checkout returns `razorpay_payment_id`, `razorpay_order_id`, and `razorpay_signature`.
 6. `/api/razorpay/verify-payment` verifies the signature with `RAZORPAY_KEY_SECRET`.
-7. The app marks the email Pro Lifetime in `lib/db.js`, creates `SC-PRO-YYYY-XXXXXX`, upserts an active `pro_lifetime` subscription, and redirects to `/success`.
-8. A Resend-backed welcome email is sent with the license reference when `RESEND_API_KEY` is configured.
+7. The app marks the email Pro Lifetime in `lib/db.js`, creates an internal license record/reference, upserts an active `pro_lifetime` subscription, and redirects to `/success`.
+8. A Resend-backed welcome email confirms Pro is active for the paid email when `RESEND_API_KEY` is configured.
 9. `/api/razorpay/webhook` verifies `X-Razorpay-Signature` using the raw request body and handles duplicate events idempotently. Failed payments are recorded without activating a license.
-10. The extension Activate Pro flow sends the email, license reference, and device fingerprint to `/api/license/activate`; the server verifies the paid license before issuing a signed device token.
+10. The extension Activate Pro flow sends the verified email activation grant/session and device fingerprint to `/api/license/activate`; the server verifies the paid license before issuing a signed device token.
 
 ## Founder Live Test Mode
 

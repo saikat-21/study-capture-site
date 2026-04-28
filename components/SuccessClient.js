@@ -39,7 +39,7 @@ export default function SuccessClient() {
   }, []);
 
   useEffect(() => {
-    if (!payment?.email || !payment?.licenseRef) return;
+    if (!payment?.email || !payment?.activationGrant) return;
     const handoff = getExtensionHandoff(searchParams);
     const extensionId = handoff.extensionId || payment.extensionId;
     if (payment.source !== "extension" && !handoff.isExtensionSource) return;
@@ -60,7 +60,7 @@ export default function SuccessClient() {
     sendExtensionActivation({
       extensionId,
       email: payment.email,
-      licenseRef: payment.licenseRef
+      activationGrant: payment.activationGrant
     }).then((result) => {
       if (cancelled) return;
       const next = {
@@ -87,8 +87,6 @@ export default function SuccessClient() {
       <div className="mt-6 rounded-2xl border border-mint/20 bg-mint/10 p-5">
         <p className="text-sm text-mist/58">Pro active for</p>
         <p className="mt-1 font-semibold text-white">{payment?.email || "your license email"}</p>
-        <p className="mt-4 text-sm text-mist/58">License reference</p>
-        <p className="mt-1 font-semibold text-white">{payment?.licenseRef || "Check your email for your license reference."}</p>
       </div>
       <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.045] p-5">
         <h2 className="font-semibold text-white">Next steps</h2>
@@ -119,11 +117,6 @@ export default function SuccessClient() {
                 ? "Study Capture Pro is active in your extension."
                 : handoffStatus?.message || "Open Study Capture and click Activate Pro to finish activation."}
           </p>
-          {!handoffStatus?.ok ? (
-            <p className="mt-2 text-xs leading-5 text-mist/45">
-              Manual license code remains available as a fallback from the extension.
-            </p>
-          ) : null}
         </div>
       ) : null}
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">

@@ -54,7 +54,7 @@ export default function ManageLicenseClient() {
   }
 
   async function maybeActivateExtension(licenseStatus = status) {
-    if (!licenseStatus || licenseStatus.plan !== "pro" || !licenseStatus.licenseRef) return;
+    if (!licenseStatus || licenseStatus.plan !== "pro" || !licenseStatus.activationGrant) return;
     const params = new URLSearchParams(window.location.search);
     const handoff = getExtensionHandoff(params);
     if (!handoff.isExtensionSource) return;
@@ -63,7 +63,7 @@ export default function ManageLicenseClient() {
     const result = await sendExtensionActivation({
       extensionId: handoff.extensionId,
       email: licenseStatus.email || email,
-      licenseRef: licenseStatus.licenseRef
+      activationGrant: licenseStatus.activationGrant
     });
     setHandoffStatus(result);
     if (result.ok) {
@@ -215,7 +215,7 @@ export default function ManageLicenseClient() {
                       ? "Activating Study Capture extension..."
                       : handoffStatus.ok
                         ? "Study Capture Pro is active in your extension."
-                        : handoffStatus.message || "Open Study Capture and use the manual license fallback."}
+                        : handoffStatus.message || "Open Study Capture and click Activate Pro again."}
                   </p>
                 </div>
               ) : null}

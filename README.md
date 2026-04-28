@@ -9,7 +9,7 @@ Official website and Pro upgrade funnel for the Study Capture browser extension.
 - Razorpay Orders + Checkout + webhooks
 - Supabase Auth email OTP
 - Server-side license and device APIs
-- Extension activation with email + license reference
+- Extension activation with email OTP/session grants
 - Supabase subscriptions and account login
 - Vercel-ready configuration
 

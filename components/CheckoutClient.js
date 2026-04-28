@@ -143,7 +143,7 @@ export default function CheckoutClient() {
               extensionHandoff = await sendExtensionActivation({
                 extensionId: handoff.extensionId,
                 email: verification.email,
-                licenseRef: verification.licenseRef
+                activationGrant: verification.activationGrant
               });
               window.sessionStorage.setItem(
                 EXTENSION_HANDOFF_KEY,
@@ -158,7 +158,8 @@ export default function CheckoutClient() {
               SUCCESS_KEY,
               JSON.stringify({
                 email: verification.email,
-                licenseRef: verification.licenseRef,
+                activationGrant: verification.activationGrant,
+                activationGrantExpiresAt: verification.activationGrantExpiresAt,
                 source,
                 extensionId: handoff.extensionId,
                 extensionHandoff,
@@ -201,25 +202,6 @@ export default function CheckoutClient() {
 
       checkout.open();
     } catch (err) {
-      if (
-        err?.code === "already_pro" &&
-        handoff.isExtensionSource &&
-        handoff.extensionId &&
-        err.details?.licenseRef
-      ) {
-        const activation = await sendExtensionActivation({
-          extensionId: handoff.extensionId,
-          email,
-          licenseRef: err.details.licenseRef
-        });
-        setError(
-          activation.ok
-            ? "This email already has Pro. Study Capture Pro is now active in your extension."
-            : buildCheckoutError(err)
-        );
-        setLoading(false);
-        return;
-      }
       setError(buildCheckoutError(err));
       setLoading(false);
     }
@@ -305,10 +287,7 @@ async function postJson(url, body) {
 
 function buildCheckoutError(error) {
   if (error?.code === "already_pro") {
-    const licenseRef = error.details?.licenseRef;
-    return licenseRef
-      ? `This email already has Study Capture Pro. Use license reference ${licenseRef} to activate Pro.`
-      : "This email already has Study Capture Pro. Use your existing license reference to activate Pro.";
+    return "This email already has Study Capture Pro. Open Activate Pro and verify the same email to restore access.";
   }
 
   return error.message || "Request failed.";
