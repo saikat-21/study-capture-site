@@ -31,7 +31,6 @@ where schemaname = 'public'
   - `NEXT_PUBLIC_SUPABASE_URL`
   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
   - `SUPABASE_SERVICE_ROLE_KEY`
-  - `SUPABASE_AUTH_REDIRECT_URL=https://studycapture.co`
   - `LICENSE_TOKEN_SECRET`
   - `DEVICE_HASH_SECRET`
   - `RATE_LIMIT_SECRET`
@@ -39,7 +38,7 @@ where schemaname = 'public'
   - `RESEND_API_KEY`
   - `RESEND_FROM_EMAIL=Study Capture <billing@studycapture.co>`
 
-## 0.1 Supabase Numeric OTP Auth
+## 0.1 Supabase Numeric Verification-Code Auth
 
 Study Capture uses numeric email verification code only. Do not mix this with magic-link login.
 
@@ -51,9 +50,10 @@ In Supabase Dashboard, confirm:
   - `https://www.studycapture.co/**`
   - `https://studycapture.co/login`
   - `https://www.studycapture.co/login`
-- `Authentication > Email Templates > Magic Link` contains `{{ .Token }}`.
-- The same email template does not include `{{ .ConfirmationURL }}`.
-- The production OTP email does not link users to `localhost:3000`.
+- `Authentication > Email Templates > Magic Link` contains `{{ .Token }}` and does not include `{{ .ConfirmationURL }}`.
+- `Authentication > Email Templates > Confirm signup` contains `{{ .Token }}` and does not include `{{ .ConfirmationURL }}`.
+- The production verification-code email does not link users to `localhost:3000`.
+- The production verification-code email does not include activation, signup confirmation, or magic-login links.
 
 Run:
 
@@ -63,10 +63,18 @@ Run:
 4. Enter the code on `/login`.
 5. Confirm the account page opens.
 
+Provider coverage before launch:
+
+- Repeat the same flow with a Gmail address.
+- Repeat the same flow with an iCloud address.
+- Repeat the same flow with an Outlook address.
+- Confirm all three receive the same numeric verification-code experience.
+
 Expected:
 
 - No password is requested.
 - No magic-link click is required.
+- Existing users and new users see the same login flow.
 - No production email redirects to `localhost:3000`.
 
 ## 1. Razorpay Payment Captured

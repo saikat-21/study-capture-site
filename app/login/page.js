@@ -2,7 +2,7 @@ import AccountClient from "../../components/AccountClient";
 
 export const metadata = {
   title: "Login",
-  description: "Login to Study Capture with email OTP."
+  description: "Login to Study Capture with an email verification code."
 };
 
 export default function LoginPage() {

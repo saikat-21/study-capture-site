@@ -5,7 +5,6 @@
 Set these in Vercel Project Settings:
 
 - `NEXT_PUBLIC_SITE_URL=https://studycapture.co`
-- `SUPABASE_AUTH_REDIRECT_URL=https://studycapture.co`
 - `NEXT_PUBLIC_CONTACT_EMAIL=support@studycapture.co`
 - `NEXT_PUBLIC_SUPPORT_EMAIL=support@studycapture.co`
 - `NEXT_PUBLIC_BILLING_EMAIL=billing@studycapture.co`
@@ -70,11 +69,13 @@ In Supabase Dashboard, set:
   - `https://studycapture.co/login`
   - `https://www.studycapture.co/login`
 
-In `Authentication > Email Templates`, open the template labelled `Magic Link`, replace the link-based content with the numeric verification-code template containing `{{ .Token }}`, and remove `{{ .ConfirmationURL }}` entirely. See `supabase/email-otp-template.html`.
+In `Authentication > Email Templates`, update both `Magic Link` and `Confirm signup` to use the numeric verification-code template containing `{{ .Token }}`. Remove `{{ .ConfirmationURL }}` and any login, activation, or confirmation links from both templates. See `supabase/email-otp-template.html`.
+
+The website intentionally does not pass `emailRedirectTo` in `/api/auth/send-otp`; login is code-only for existing and new users.
 
 ## Admin
 
-Open `/admin` and sign in with email OTP. Only emails listed in `ADMIN_EMAILS` can load admin data or update license state.
+Open `/admin` and sign in with an email verification code. Only emails listed in `ADMIN_EMAILS` can load admin data or update license state.
 
 ## Build
 

@@ -3,7 +3,7 @@ import ManageLicenseClient from "../../components/ManageLicenseClient";
 
 export const metadata = {
   title: "Manage License",
-  description: "Manage Study Capture Pro devices with passwordless email OTP."
+  description: "Manage Study Capture Pro devices with a passwordless email verification code."
 };
 
 export default function ManageLicensePage() {

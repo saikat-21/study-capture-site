@@ -28,7 +28,6 @@ Set these in Vercel:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
-SUPABASE_AUTH_REDIRECT_URL=https://studycapture.co
 LICENSE_TOKEN_SECRET=
 DEVICE_HASH_SECRET=
 RATE_LIMIT_SECRET=
@@ -37,7 +36,7 @@ ADMIN_EMAILS=founder@studycapture.co
 
 Keep `SUPABASE_SERVICE_ROLE_KEY`, `LICENSE_TOKEN_SECRET`, `DEVICE_HASH_SECRET`, and `RATE_LIMIT_SECRET` server-only.
 
-## Auth / OTP
+## Auth / Verification Code
 
 Study Capture uses one auth flow only: numeric email verification code.
 
@@ -51,7 +50,8 @@ The site uses these backend routes:
 `/api/auth/send-otp` calls Supabase `signInWithOtp` with:
 
 - `shouldCreateUser: true`
-- `emailRedirectTo: https://studycapture.co/login` or the value of `SUPABASE_AUTH_REDIRECT_URL`
+
+It intentionally does not pass `emailRedirectTo`; Study Capture does not use link-based login, activation links, or magic links.
 
 ### Supabase Auth URL Configuration
 
@@ -76,15 +76,19 @@ https://www.studycapture.co/login
 
 Do not leave `localhost:3000` as the production Site URL. Keep localhost only for a separate local/dev project or local-only redirect entry.
 
-### Supabase Email Template
+### Supabase Email Templates
 
 In Supabase Dashboard:
 
 1. Open `Authentication`.
 2. Open `Email Templates`.
-3. Open the `Magic Link` template. Supabase labels this template `Magic Link`, but Study Capture configures it as numeric OTP only.
+3. Open the `Magic Link` template. Supabase labels this template `Magic Link`, but Study Capture configures it as numeric verification code only.
 4. Replace the link-based content with a numeric verification-code template that includes `{{ .Token }}`.
-5. Remove `{{ .ConfirmationURL }}` entirely from the template so the email does not present a signup/login link.
+5. Remove `{{ .ConfirmationURL }}` entirely from the template so the email does not present a login link.
+6. Open the `Confirm signup` template and paste the same numeric verification-code template there too.
+7. Remove `{{ .ConfirmationURL }}` and any activation/confirmation links from the `Confirm signup` template.
+
+This two-template setup matters because existing users and newly created users can receive different Supabase auth templates. Both templates must show only the numeric token for a predictable Gmail, iCloud, Outlook, and custom-domain experience.
 
 Use `supabase/email-otp-template.html`, or paste this minimal template:
 
@@ -133,7 +137,7 @@ Customer account URL:
 https://studycapture.co/login
 ```
 
-This uses the same Supabase email OTP flow as license management. After OTP verification, `/api/account/me` returns the server-verified user, license, subscription, payment, and device records.
+This uses the same Supabase email verification-code flow as license management. After code verification, `/api/account/me` returns the server-verified user, license, subscription, payment, and device records.
 
 ## Admin Dashboard
 
@@ -146,7 +150,7 @@ https://studycapture.co/admin/debug
 
 Access requires:
 
-1. Supabase email OTP.
+1. Supabase email verification code.
 2. The verified email must be listed in `ADMIN_EMAILS`.
 
 The dashboard shows users, paid/pending payments, active subscriptions, Pro licenses, active devices, gross revenue, recent activity, and an admin license update form for refunds, chargebacks, bans, and device-limit adjustments. The debug page shows recent payments, licenses, device activations, and activation/deactivation events for founder verification.

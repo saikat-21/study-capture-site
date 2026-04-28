@@ -19,7 +19,7 @@ See `TESTING.md` for the Razorpay-focused checklist. Keep these broader checks a
 ## License Management
 
 - Visit `/manage-license`.
-- Verify with email OTP after Supabase is configured.
+- Verify with an email verification code after Supabase is configured.
 - Confirm plan status renders as `Free` when no paid license exists.
 - Seed a `paid_lifetime` license for the same email and confirm plan status renders as `Pro Lifetime`.
 - Add three active devices and confirm the count reads `3/3 active`.
