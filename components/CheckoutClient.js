@@ -119,7 +119,7 @@ export default function CheckoutClient() {
 
       checkout.open();
     } catch (err) {
-      setError(err.message);
+      setError(buildCheckoutError(err));
       setLoading(false);
     }
   }
@@ -188,8 +188,24 @@ async function postJson(url, body) {
     body: JSON.stringify(body)
   });
   const result = await response.json();
-  if (!response.ok) throw new Error(result.message || "Request failed.");
+  if (!response.ok) {
+    const error = new Error(result.message || "Request failed.");
+    error.code = result.code;
+    error.details = result.details;
+    throw error;
+  }
   return result;
+}
+
+function buildCheckoutError(error) {
+  if (error?.code === "already_pro") {
+    const licenseRef = error.details?.licenseRef;
+    return licenseRef
+      ? `This email already has Study Capture Pro. Use license reference ${licenseRef} to activate Pro.`
+      : "This email already has Study Capture Pro. Use your existing license reference to activate Pro.";
+  }
+
+  return error.message || "Request failed.";
 }
 
 function loadRazorpayCheckout() {

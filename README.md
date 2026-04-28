@@ -17,6 +17,7 @@ Official website and Pro upgrade funnel for the Study Capture browser extension.
 
 - `/` landing page
 - `/admin` OTP-protected admin dashboard
+- `/admin/debug` founder-only production debug view
 - `/login` passwordless account login/signup
 - `/install` browser-aware install page
 - `/upgrade` email-first Pro upgrade flow

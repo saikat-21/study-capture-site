@@ -97,6 +97,7 @@ Admin URL:
 
 ```text
 https://studycapture.co/admin
+https://studycapture.co/admin/debug
 ```
 
 Access requires:
@@ -104,7 +105,7 @@ Access requires:
 1. Supabase email OTP.
 2. The verified email must be listed in `ADMIN_EMAILS`.
 
-The dashboard shows users, paid/pending payments, active subscriptions, Pro licenses, active devices, gross revenue, recent activity, and an admin license update form for refunds, chargebacks, bans, and device-limit adjustments.
+The dashboard shows users, paid/pending payments, active subscriptions, Pro licenses, active devices, gross revenue, recent activity, and an admin license update form for refunds, chargebacks, bans, and device-limit adjustments. The debug page shows recent payments, licenses, device activations, and activation/deactivation events for founder verification.
 
 ## Row Level Security
 

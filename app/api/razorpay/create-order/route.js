@@ -1,4 +1,8 @@
-import { createPendingOrder } from "../../../../lib/db";
+import {
+  createPendingOrder,
+  getLicenseByEmail,
+  getSubscriptionByEmail
+} from "../../../../lib/db";
 import { fail, HttpError, ok, readJson } from "../../../../lib/server/errors";
 import {
   buildRazorpayReceipt,
@@ -38,6 +42,27 @@ export async function POST(request) {
       emailLimit: 12,
       ipLimit: 50
     });
+
+    const [existingLicense, existingSubscription] = await Promise.all([
+      getLicenseByEmail(email),
+      getSubscriptionByEmail(email)
+    ]);
+
+    if (
+      existingLicense?.state === "paid_lifetime" &&
+      (!existingSubscription || existingSubscription.status === "active")
+    ) {
+      throw new HttpError(
+        409,
+        "already_pro",
+        "This email already has Study Capture Pro active. Use the existing license reference to activate Pro.",
+        {
+          email,
+          licenseRef: existingLicense.license_ref || null
+        }
+      );
+    }
+
     const receipt = buildRazorpayReceipt({ email, source });
 
     const razorpayOrder = await createRazorpayOrder({

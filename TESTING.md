@@ -1,85 +1,413 @@
-# Razorpay Testing Checklist
+# Study Capture Production Test Checklist
 
-## Order Creation
+Use this checklist after every production deploy touching payments, Supabase, email, licensing, or the extension activation flow.
 
-- Add Razorpay env vars to `.env.local`.
-- Visit `/upgrade?src=extension&reason=pdf_limit`.
-- Enter an email and continue to `/checkout`.
-- Click `Pay ₹799 securely`.
-- Confirm `/api/razorpay/create-order` returns:
-  - `order_id`
-  - `amount: 79900`
-  - `currency: INR`
-  - `key_id`
+## Test Data
 
-## Razorpay Checkout
+- Use a real inbox you can access.
+- Use a fresh email for the full purchase test.
+- Use the same email again for the duplicate-paid-email test.
+- Keep Razorpay Dashboard, Supabase Table Editor/SQL Editor, Vercel logs, and the Study Capture extension open.
 
-- Confirm the Razorpay popup opens.
-- Confirm UPI, credit card, debit card, and netbanking are available in Razorpay Checkout.
-- Confirm the order amount is ₹799.
-- Confirm the prefilled email matches the email entered on `/upgrade`.
+## 0. Preflight
 
-## Signature Verification
+- Confirm Vercel is deployed from the latest `main` commit.
+- Confirm Supabase has the latest `supabase/schema.sql` applied.
+- Confirm this index exists:
 
-- Confirm `/api/razorpay/verify-payment` rejects an invalid `razorpay_signature`.
-- Complete a successful Razorpay payment and confirm `/api/razorpay/verify-payment` accepts the Checkout callback.
-- Confirm the response includes a license reference formatted like `SC-PRO-2026-XXXXXX`.
-- Confirm `/success` displays the email and license reference.
-- Confirm the welcome email is sent when `RESEND_API_KEY` is configured.
-- Cancel the Razorpay modal and confirm the checkout page says the payment was cancelled and the user was not charged.
-- Trigger a failed payment and confirm the checkout page shows a clean failure message.
+```sql
+select indexname, indexdef
+from pg_indexes
+where schemaname = 'public'
+  and tablename = 'payments'
+  and indexname = 'payments_provider_order_conflict_idx';
+```
 
-## Extension Activation
+- Confirm required Vercel env vars exist:
+  - `RAZORPAY_KEY_ID`
+  - `RAZORPAY_KEY_SECRET`
+  - `NEXT_PUBLIC_RAZORPAY_KEY_ID`
+  - `RAZORPAY_WEBHOOK_SECRET`
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  - `SUPABASE_SERVICE_ROLE_KEY`
+  - `LICENSE_TOKEN_SECRET`
+  - `DEVICE_HASH_SECRET`
+  - `RATE_LIMIT_SECRET`
+  - `ADMIN_EMAILS=founder@studycapture.co`
+  - `RESEND_API_KEY`
+  - `RESEND_FROM_EMAIL=Study Capture <billing@studycapture.co>`
 
-- Open the extension after a successful purchase.
-- Click `Activate Pro`.
-- Enter the paid email and `SC-PRO-YYYY-XXXXXX` license reference.
-- Confirm `/api/license/activate` returns a signed token and the extension switches to Pro.
-- Confirm `/api/license/status` keeps Pro active for that token.
-- Confirm a fourth active browser/device returns `device_limit_reached`.
+## 1. Razorpay Payment Captured
 
-## Supabase Backend
+1. Open `https://studycapture.co/upgrade?src=website`.
+2. Enter a fresh email.
+3. Continue to `/checkout`.
+4. Click `Pay ₹799 securely`.
+5. Complete the Razorpay payment.
+6. In Razorpay Dashboard, open Payments.
+7. Confirm the payment status is `captured`.
+8. Confirm amount is `₹799`.
+9. Confirm order notes include the email and `Study Capture Pro Lifetime`.
 
-- Run `supabase/schema.sql` in production Supabase.
-- Confirm RLS is enabled on `users`, `payments`, `subscriptions`, `licenses`, `devices`, `webhook_events`, and `auth_events`.
-- Confirm a signed-in user can only select records matching their own email/auth user.
-- Confirm `webhook_events` and `auth_events` are not readable with anon/authenticated keys.
-- Confirm successful Razorpay verification creates/updates `users`, `payments`, `subscriptions`, and `licenses`.
-- Confirm the payment row has `license_id` after license activation.
-- Confirm the subscription row has `status: active`, `plan: pro_lifetime`, and `lifetime_access: true`.
-- Confirm `payments_provider_order_conflict_idx` exists on `payments(provider_order_id)`.
+## 2. Supabase Payment Row Created
 
-## Login / Account
+Run:
 
-- Open `/login`.
-- Enter a new email and verify the Supabase OTP.
-- Confirm `/api/account/me` returns the server-verified account, license, subscription, payment, and device data.
-- Confirm unpaid accounts show Free and paid accounts show Pro Lifetime.
-- Confirm billing contact points to `billing@studycapture.co` and product help points to `support@studycapture.co`.
+```sql
+select
+  id,
+  email,
+  provider,
+  provider_order_id,
+  provider_payment_id,
+  amount,
+  currency,
+  status,
+  paid_at,
+  license_id
+from public.payments
+where email = 'TEST_EMAIL_HERE'
+order by created_at desc;
+```
 
-## Admin Dashboard
+Confirm:
 
-- Set `ADMIN_EMAILS` in Vercel.
-- Open `/admin` and verify OTP with an allowed admin email.
-- Confirm metrics and recent records load.
-- Confirm a non-admin OTP session receives `admin_forbidden`.
-- Update a license state to `refunded`, confirm extension `/api/license/status` returns inactive.
-- Restore the license to `paid_lifetime`, confirm activation works again.
+- `provider = razorpay`
+- `amount = 79900`
+- `currency = INR`
+- `status = paid`
+- `provider_order_id` starts with `order_`
+- `provider_payment_id` starts with `pay_`
+- `license_id` is not null after payment verification/webhook processing
 
-## Webhook
+## 3. Subscription Active
 
-- In Razorpay live dashboard, configure `https://studycapture.co/api/razorpay/webhook`.
-- Subscribe to `payment.captured`, `order.paid`, and `payment.failed`.
-- Confirm webhook requests with an invalid `X-Razorpay-Signature` are rejected.
-- Confirm duplicate webhook deliveries do not create duplicate licenses.
-- Confirm duplicate checkout + webhook confirmations do not send duplicate welcome emails.
-- Confirm webhook deliveries update payment/license state even if the browser closes after payment.
-- Confirm `payment.failed` webhook deliveries create/update a failed payment without activating Pro.
+Run:
 
-## Security
+```sql
+select
+  email,
+  plan,
+  status,
+  provider,
+  provider_order_id,
+  provider_payment_id,
+  amount,
+  currency,
+  lifetime_access,
+  started_at,
+  ended_at
+from public.subscriptions
+where email = 'TEST_EMAIL_HERE';
+```
+
+Confirm:
+
+- `plan = pro_lifetime`
+- `status = active`
+- `provider = razorpay`
+- `amount = 79900`
+- `currency = INR`
+- `lifetime_access = true`
+- `started_at` is not null
+- `ended_at` is null
+
+## 4. License Generated
+
+Run:
+
+```sql
+select
+  id,
+  email,
+  license_ref,
+  state,
+  max_devices,
+  activated_at
+from public.licenses
+where email = 'TEST_EMAIL_HERE';
+```
+
+Confirm:
+
+- `license_ref` matches `SC-PRO-YYYY-XXXXXX`
+- `state = paid_lifetime`
+- `max_devices = 3`
+- `activated_at` is not null
+
+## 5. Success Page Shows License Reference
+
+After payment, confirm `/success` shows:
+
+- “Excellent choice — welcome to Study Capture Pro.”
+- Pro active for the paid email.
+- License reference matching the Supabase `licenses.license_ref`.
+- Next steps mention extension activation with the same email and license reference.
+
+## 6. Welcome / License Email Sent
+
+Check the paid email inbox.
+
+Confirm the welcome email:
+
+- Subject: `Welcome to Study Capture Pro — License Activated 🎉`
+- Sent from the configured Resend sender.
+- Includes the paid email.
+- Includes the same `SC-PRO-YYYY-XXXXXX` license reference.
+- Includes `billing@studycapture.co` for billing/refunds/invoices/license purchase questions.
+- Includes `support@studycapture.co` for product help.
+
+If no email arrives:
+
+- Check Vercel logs for `Welcome email delivery failed`.
+- Confirm `RESEND_API_KEY` and `RESEND_FROM_EMAIL` are configured.
+- Confirm the domain/sender is verified in Resend.
+
+## 7. Extension Activate Pro Unlocks Pro
+
+1. Install/open the Study Capture extension.
+2. Click `Activate Pro`.
+3. Enter the paid email.
+4. Enter the `SC-PRO-YYYY-XXXXXX` license reference.
+5. Submit activation.
+6. Confirm the extension switches from Free to Pro.
+7. Confirm Pro-only features unlock:
+   - Unlimited PDF exports
+   - Unlimited Study Books
+   - Reading Capture Mode
+   - Auto Scroll Capture
+
+Run:
+
+```sql
+select
+  d.id,
+  l.email,
+  l.license_ref,
+  d.browser_name,
+  d.os,
+  d.extension_version,
+  d.first_seen_at,
+  d.last_seen_at,
+  d.deactivated_at
+from public.devices d
+join public.licenses l on l.id = d.license_id
+where l.email = 'TEST_EMAIL_HERE'
+order by d.last_seen_at desc;
+```
+
+Confirm one active device exists with `deactivated_at is null`.
+
+## 8. 3-Device Limit Works
+
+Activate Pro with the same paid email/license reference on three distinct browser profiles/devices.
+
+Confirm:
+
+```sql
+select count(*) as active_devices
+from public.devices d
+join public.licenses l on l.id = d.license_id
+where l.email = 'TEST_EMAIL_HERE'
+  and d.deactivated_at is null;
+```
+
+Expected:
+
+- `active_devices = 3`
+- All 3 extension instances remain Pro.
+
+## 9. 4th Device Blocked
+
+Activate Pro on a fourth distinct browser profile/device using the same email/license reference.
+
+Expected extension result:
+
+- Activation fails cleanly.
+- User sees a device limit message.
+
+Expected API result:
+
+```json
+{
+  "ok": false,
+  "code": "device_limit_reached"
+}
+```
+
+Confirm active devices remain `3` in Supabase.
+
+## 10. Duplicate Paid Email Cannot Pay Again Accidentally
+
+1. Open `https://studycapture.co/upgrade?src=website`.
+2. Enter the same email that already has `paid_lifetime`.
+3. Continue to checkout.
+4. Click `Pay ₹799 securely`.
+
+Expected:
+
+- Razorpay Checkout does not open.
+- `/api/razorpay/create-order` returns `409 already_pro`.
+- The checkout page tells the user the email already has Pro and shows the existing license reference when available.
+
+Confirm no new pending order was created:
+
+```sql
+select count(*) as recent_pending_orders
+from public.payments
+where email = 'TEST_EMAIL_HERE'
+  and status = 'pending'
+  and created_at > now() - interval '10 minutes';
+```
+
+Expected:
+
+- `recent_pending_orders = 0`
+
+## 11. Failed / Cancelled Payment Does Not Create License
+
+### Cancelled Checkout
+
+1. Open `/upgrade` with a brand-new unpaid email.
+2. Continue to `/checkout`.
+3. Click `Pay ₹799 securely`.
+4. Close/dismiss the Razorpay modal.
+
+Expected:
+
+- Checkout page says payment was cancelled and user was not charged.
+- No `paid_lifetime` license exists.
+
+Run:
+
+```sql
+select *
+from public.licenses
+where email = 'CANCELLED_TEST_EMAIL_HERE';
+```
+
+Expected:
+
+- No row, or `state` is not `paid_lifetime`.
+
+### Failed Payment
+
+Trigger a failed Razorpay payment.
+
+Expected:
+
+- Payment row may exist with `status = failed`.
+- No active subscription exists.
+- No `paid_lifetime` license exists.
+
+Run:
+
+```sql
+select status, provider_order_id, provider_payment_id
+from public.payments
+where email = 'FAILED_TEST_EMAIL_HERE'
+order by created_at desc;
+
+select state
+from public.licenses
+where email = 'FAILED_TEST_EMAIL_HERE';
+
+select status
+from public.subscriptions
+where email = 'FAILED_TEST_EMAIL_HERE';
+```
+
+Expected:
+
+- Latest payment is `failed` if Razorpay sent `payment.failed`.
+- License is absent or not `paid_lifetime`.
+- Subscription is absent or not `active`.
+
+## 12. Webhook Idempotency
+
+In Razorpay Dashboard, resend the same `payment.captured` webhook.
+
+Confirm:
+
+- `/api/razorpay/webhook` returns success.
+- No duplicate license is created.
+- No duplicate active subscription is created.
+- Welcome email is not sent again for an already-active license.
+
+Run:
+
+```sql
+select count(*)
+from public.licenses
+where email = 'TEST_EMAIL_HERE';
+
+select count(*)
+from public.subscriptions
+where email = 'TEST_EMAIL_HERE'
+  and plan = 'pro_lifetime';
+
+select provider, event_id, event_type, processed_at
+from public.webhook_events
+order by processed_at desc
+limit 10;
+```
+
+Expected:
+
+- One license row.
+- One `pro_lifetime` subscription row.
+- Webhook event is recorded once per Razorpay event ID.
+
+## 13. Founder Admin / Debug Page
+
+1. Open `https://studycapture.co/admin/debug`.
+2. Login with `founder@studycapture.co`.
+3. Verify OTP.
+
+Confirm the page shows:
+
+- Recent payments
+- Recent licenses
+- Recent device activations
+- Recent activation/deactivation events
+
+Also test non-admin access:
+
+1. Open `/admin/debug`.
+2. Login with an email not listed in `ADMIN_EMAILS`.
+3. Confirm API returns `admin_forbidden`.
+
+## 14. Security Checks
 
 - Confirm `RAZORPAY_KEY_SECRET` is not referenced in any client component.
 - Confirm `RAZORPAY_WEBHOOK_SECRET` is not referenced in any client component.
+- Confirm `SUPABASE_SERVICE_ROLE_KEY` is not referenced in any client component.
 - Confirm browser bundles only include `NEXT_PUBLIC_RAZORPAY_KEY_ID`.
-- Confirm the server verifies payment with HMAC SHA256 before activating Pro.
+- Confirm payment verification uses HMAC SHA256 server-side.
 - Confirm webhook verification uses the raw request body.
+- Confirm RLS is enabled on:
+  - `users`
+  - `payments`
+  - `subscriptions`
+  - `licenses`
+  - `devices`
+  - `webhook_events`
+  - `auth_events`
+
+## Release Sign-Off
+
+Release is ready when all are true:
+
+- Razorpay captured payment.
+- Supabase `payments.status = paid`.
+- Supabase `subscriptions.status = active`.
+- Supabase `licenses.state = paid_lifetime`.
+- `/success` shows license reference.
+- Welcome/license email received.
+- Extension activates Pro.
+- 3 active devices allowed.
+- 4th active device blocked.
+- Existing paid email cannot open a new Razorpay payment accidentally.
+- Failed/cancelled payment does not create an active license.
+- `/admin/debug` shows recent production records for founder.
