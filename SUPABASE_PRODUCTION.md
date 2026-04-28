@@ -28,6 +28,7 @@ Set these in Vercel:
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_AUTH_REDIRECT_URL=https://studycapture.co
 LICENSE_TOKEN_SECRET=
 DEVICE_HASH_SECRET=
 RATE_LIMIT_SECRET=
@@ -38,19 +39,62 @@ Keep `SUPABASE_SERVICE_ROLE_KEY`, `LICENSE_TOKEN_SECRET`, `DEVICE_HASH_SECRET`, 
 
 ## Auth / OTP
 
-The site uses Supabase email OTP:
+Study Capture uses one auth flow only: numeric 6-digit email OTP.
+
+Do not use magic links for Study Capture login. The UI expects a 6-digit code, and `/api/auth/verify-otp` verifies that code with Supabase `verifyOtp({ type: "email" })`.
+
+The site uses these backend routes:
 
 - `/api/auth/send-otp`
 - `/api/auth/verify-otp`
 
-In Supabase Dashboard, configure the email template to include the OTP token:
+`/api/auth/send-otp` calls Supabase `signInWithOtp` with:
+
+- `shouldCreateUser: true`
+- `emailRedirectTo: https://studycapture.co/login` or the value of `SUPABASE_AUTH_REDIRECT_URL`
+
+### Supabase Auth URL Configuration
+
+In Supabase Dashboard:
+
+1. Open `Authentication`.
+2. Open `URL Configuration`.
+3. Set `Site URL` to:
+
+```text
+https://studycapture.co
+```
+
+4. Add these `Redirect URLs`:
+
+```text
+https://studycapture.co/**
+https://www.studycapture.co/**
+https://studycapture.co/login
+https://www.studycapture.co/login
+```
+
+Do not leave `localhost:3000` as the production Site URL. Keep localhost only for a separate local/dev project or local-only redirect entry.
+
+### Supabase Email Template
+
+In Supabase Dashboard:
+
+1. Open `Authentication`.
+2. Open `Email Templates`.
+3. Open the `Magic Link` template. Supabase labels this template `Magic Link`, but Study Capture configures it as numeric OTP only.
+4. Replace the link-based content with a numeric OTP template that includes `{{ .Token }}`.
+5. Remove `{{ .ConfirmationURL }}` entirely from the template so the email does not present a signup/login link.
+
+Use `supabase/email-otp-template.html`, or paste this minimal template:
 
 ```html
 <h2>Study Capture login code</h2>
-<p>Your code is: {{ .Token }}</p>
+<p>Your 6-digit code is: <strong>{{ .Token }}</strong></p>
+<p>Enter this code on the Study Capture login screen.</p>
 ```
 
-Add `https://studycapture.co` to Supabase Auth URL configuration.
+Supabase documents this behavior in its [`signInWithOtp` reference](https://supabase.com/docs/reference/javascript/auth-signinwithotp): the email sends a magic link when the template uses `{{ .ConfirmationURL }}`, and sends a code when it uses `{{ .Token }}`.
 
 ## Payment Activation
 

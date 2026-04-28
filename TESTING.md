@@ -31,12 +31,43 @@ where schemaname = 'public'
   - `NEXT_PUBLIC_SUPABASE_URL`
   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
   - `SUPABASE_SERVICE_ROLE_KEY`
+  - `SUPABASE_AUTH_REDIRECT_URL=https://studycapture.co`
   - `LICENSE_TOKEN_SECRET`
   - `DEVICE_HASH_SECRET`
   - `RATE_LIMIT_SECRET`
   - `ADMIN_EMAILS=founder@studycapture.co`
   - `RESEND_API_KEY`
   - `RESEND_FROM_EMAIL=Study Capture <billing@studycapture.co>`
+
+## 0.1 Supabase Numeric OTP Auth
+
+Study Capture uses numeric 6-digit email OTP only. Do not mix this with magic-link login.
+
+In Supabase Dashboard, confirm:
+
+- `Authentication > URL Configuration > Site URL` is `https://studycapture.co`.
+- Redirect URLs include:
+  - `https://studycapture.co/**`
+  - `https://www.studycapture.co/**`
+  - `https://studycapture.co/login`
+  - `https://www.studycapture.co/login`
+- `Authentication > Email Templates > Magic Link` contains `{{ .Token }}`.
+- The same email template does not include `{{ .ConfirmationURL }}`.
+- The production OTP email does not link users to `localhost:3000`.
+
+Run:
+
+1. Open `https://studycapture.co/login`.
+2. Enter an email.
+3. Confirm the email contains a 6-digit numeric code.
+4. Enter the code on `/login`.
+5. Confirm the account page opens.
+
+Expected:
+
+- No password is requested.
+- No magic-link click is required.
+- No production email redirects to `localhost:3000`.
 
 ## 1. Razorpay Payment Captured
 

@@ -5,6 +5,7 @@
 Set these in Vercel Project Settings:
 
 - `NEXT_PUBLIC_SITE_URL=https://studycapture.co`
+- `SUPABASE_AUTH_REDIRECT_URL=https://studycapture.co`
 - `NEXT_PUBLIC_CONTACT_EMAIL=support@studycapture.co`
 - `NEXT_PUBLIC_SUPPORT_EMAIL=support@studycapture.co`
 - `NEXT_PUBLIC_BILLING_EMAIL=billing@studycapture.co`
@@ -55,6 +56,21 @@ The Razorpay flow works with the in-memory mock DB when Supabase is not configur
 4. Keep RLS enabled. API routes use `SUPABASE_SERVICE_ROLE_KEY` and perform server-side ownership checks.
 
 `/api/license/activate` and `/api/license/status` require durable license/device rows in production, so do not rely on the in-memory mock for the live extension activation flow.
+
+## Supabase Auth
+
+Study Capture uses numeric 6-digit email OTP only.
+
+In Supabase Dashboard, set:
+
+- Site URL: `https://studycapture.co`
+- Redirect URLs:
+  - `https://studycapture.co/**`
+  - `https://www.studycapture.co/**`
+  - `https://studycapture.co/login`
+  - `https://www.studycapture.co/login`
+
+In `Authentication > Email Templates`, open the template labelled `Magic Link`, replace the link-based content with the numeric OTP template containing `{{ .Token }}`, and remove `{{ .ConfirmationURL }}` entirely. See `supabase/email-otp-template.html`.
 
 ## Admin
 
