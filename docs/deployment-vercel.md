@@ -73,6 +73,12 @@ In `Authentication > Email Templates`, update both `Magic Link` and `Confirm sig
 
 The website intentionally does not pass `emailRedirectTo` in `/api/auth/send-otp`; login is code-only for existing and new users.
 
+## Extension Handoff
+
+Extension-origin upgrade and activation URLs include `src=extension` and `extId`. After payment or OTP login, the website sends the paid email and license reference back to the installed extension. The extension then calls `/api/license/activate` itself, using its own device ID and browser metadata, and stores only the server-signed license token.
+
+Manual license reference entry remains available inside the extension as a fallback.
+
 ## Admin
 
 Open `/admin` and sign in with an email verification code. Only emails listed in `ADMIN_EMAILS` can load admin data or update license state.

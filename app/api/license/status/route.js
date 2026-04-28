@@ -34,7 +34,10 @@ export async function GET(request) {
     await ensureProfileForAuthUser(supabase, auth.user, auth.email);
 
     const license = await getSupabaseLicenseByEmail(supabase, auth.email);
-    const plan = licensePlanForState(license?.state);
+    const subscription = await getSubscriptionByEmail(auth.email);
+    const licensePlan = licensePlanForState(license?.state);
+    const subscriptionActive = !subscription || subscription.status === "active";
+    const plan = licensePlan === "pro" && subscriptionActive ? "pro" : "free";
     const maxDevices = license?.max_devices || 3;
     const activeDevices = license ? await listActiveDevices(supabase, license.id) : [];
     let deviceStatus = "not_activated";
@@ -63,6 +66,8 @@ export async function GET(request) {
       active: plan === "pro",
       licenseActive: plan === "pro",
       status: plan === "pro" ? "active" : "inactive",
+      subscriptionStatus: subscription?.status || (plan === "pro" ? "active" : "none"),
+      licenseRef: license?.license_ref || null,
       activeDeviceCount: activeDevices.length,
       deviceStatus,
       activeDevices

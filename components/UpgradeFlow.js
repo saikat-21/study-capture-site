@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Check, Loader2, Mail } from "lucide-react";
 
-const ALLOWED_PARAMS = ["src", "reason"];
+const ALLOWED_PARAMS = ["src", "reason", "extId"];
 const CHECKOUT_KEY = "studyCaptureCheckout";
 
 function preservedParams(searchParams) {
@@ -45,6 +45,7 @@ export default function UpgradeFlow() {
         email: normalizedEmail,
         source: query.get("src") || "website",
         reason: query.get("reason") || "direct",
+        extensionId: query.get("extId") || "",
         enteredAt: new Date().toISOString()
       })
     );

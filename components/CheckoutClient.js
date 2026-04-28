@@ -4,6 +4,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BadgeCheck, Loader2, Lock, ShieldCheck } from "lucide-react";
+import {
+  EXTENSION_HANDOFF_KEY,
+  getExtensionHandoff,
+  sendExtensionActivation
+} from "../lib/extension-handoff";
 import { billingEmail } from "../lib/site";
 
 const CHECKOUT_KEY = "studyCaptureCheckout";
@@ -19,6 +24,7 @@ export default function CheckoutClient() {
 
   const source = searchParams.get("src") || "website";
   const reason = searchParams.get("reason") || "direct";
+  const handoff = useMemo(() => getExtensionHandoff(searchParams), [searchParams]);
 
   useEffect(() => {
     const stored = window.sessionStorage.getItem(CHECKOUT_KEY);
@@ -80,19 +86,41 @@ export default function CheckoutClient() {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature
             });
+            let extensionHandoff = null;
+
+            if (handoff.isExtensionSource) {
+              extensionHandoff = await sendExtensionActivation({
+                extensionId: handoff.extensionId,
+                email: verification.email,
+                licenseRef: verification.licenseRef
+              });
+              window.sessionStorage.setItem(
+                EXTENSION_HANDOFF_KEY,
+                JSON.stringify({
+                  ...extensionHandoff,
+                  attemptedAt: new Date().toISOString()
+                })
+              );
+            }
 
             window.sessionStorage.setItem(
               SUCCESS_KEY,
               JSON.stringify({
                 email: verification.email,
                 licenseRef: verification.licenseRef,
+                source,
+                extensionId: handoff.extensionId,
+                extensionHandoff,
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 paidAt: new Date().toISOString()
               })
             );
 
-            router.push("/success");
+            const successQuery = new URLSearchParams();
+            if (source) successQuery.set("src", source);
+            if (handoff.extensionId) successQuery.set("extId", handoff.extensionId);
+            router.push(`/success${successQuery.toString() ? `?${successQuery.toString()}` : ""}`);
           } catch (err) {
             const detail = err.message ? ` ${err.message}` : "";
             setError(
@@ -119,6 +147,25 @@ export default function CheckoutClient() {
 
       checkout.open();
     } catch (err) {
+      if (
+        err?.code === "already_pro" &&
+        handoff.isExtensionSource &&
+        handoff.extensionId &&
+        err.details?.licenseRef
+      ) {
+        const activation = await sendExtensionActivation({
+          extensionId: handoff.extensionId,
+          email,
+          licenseRef: err.details.licenseRef
+        });
+        setError(
+          activation.ok
+            ? "This email already has Pro. Study Capture Pro is now active in your extension."
+            : buildCheckoutError(err)
+        );
+        setLoading(false);
+        return;
+      }
       setError(buildCheckoutError(err));
       setLoading(false);
     }
@@ -144,7 +191,7 @@ export default function CheckoutClient() {
         </div>
         {!canPay ? (
           <Link
-            href={`/upgrade?src=${encodeURIComponent(source)}${reason !== "direct" ? `&reason=${encodeURIComponent(reason)}` : ""}`}
+            href={buildUpgradeReturnHref({ source, reason, extensionId: handoff.extensionId })}
             className="mt-6 inline-flex text-sm font-semibold text-mint transition hover:text-white"
           >
             Enter email on upgrade page
@@ -162,7 +209,7 @@ export default function CheckoutClient() {
         </p>
         <div className="mt-5 flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.045] p-4 text-sm leading-6 text-mist/70">
           <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-mint" aria-hidden="true" />
-          <span>No Razorpay secret key is exposed to the browser. The server verifies the payment signature before activating Pro.</span>
+          <span>Secure payment powered by Razorpay. Your license will be linked to this email.</span>
         </div>
         {error ? <p className="mt-5 rounded-2xl bg-coral/10 p-4 text-sm text-coral">{error}</p> : null}
         <button
@@ -206,6 +253,14 @@ function buildCheckoutError(error) {
   }
 
   return error.message || "Request failed.";
+}
+
+function buildUpgradeReturnHref({ source, reason, extensionId }) {
+  const params = new URLSearchParams();
+  params.set("src", source || "website");
+  if (reason && reason !== "direct") params.set("reason", reason);
+  if (extensionId) params.set("extId", extensionId);
+  return `/upgrade?${params.toString()}`;
 }
 
 function loadRazorpayCheckout() {

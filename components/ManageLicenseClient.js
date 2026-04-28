@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import { Check, Loader2, Monitor, Trash2 } from "lucide-react";
+import {
+  getExtensionHandoff,
+  sendExtensionActivation
+} from "../lib/extension-handoff";
 import OtpDeliveryNotice from "./OtpDeliveryNotice";
 import { handleOtpPaste, normalizeOtpInput, OTP_MAX_LENGTH, OTP_PATTERN } from "../lib/otp-input";
 
@@ -11,6 +15,7 @@ export default function ManageLicenseClient() {
   const [step, setStep] = useState("email");
   const [session, setSession] = useState(null);
   const [status, setStatus] = useState(null);
+  const [handoffStatus, setHandoffStatus] = useState(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,8 +35,9 @@ export default function ManageLicenseClient() {
       const result = await postJson("/api/auth/verify-otp", { email, otp });
       setSession(result.session);
       setMessage("Email verified.");
-      await loadStatus(result.session.access_token);
+      const licenseStatus = await loadStatus(result.session.access_token);
       setStep("manage");
+      await maybeActivateExtension(licenseStatus);
     });
   }
 
@@ -44,6 +50,25 @@ export default function ManageLicenseClient() {
     const result = await response.json();
     if (!response.ok) throw new Error(result.message || "Could not load license.");
     setStatus(result);
+    return result;
+  }
+
+  async function maybeActivateExtension(licenseStatus = status) {
+    if (!licenseStatus || licenseStatus.plan !== "pro" || !licenseStatus.licenseRef) return;
+    const params = new URLSearchParams(window.location.search);
+    const handoff = getExtensionHandoff(params);
+    if (!handoff.isExtensionSource) return;
+
+    setHandoffStatus({ pending: true, message: "Activating Study Capture extension..." });
+    const result = await sendExtensionActivation({
+      extensionId: handoff.extensionId,
+      email: licenseStatus.email || email,
+      licenseRef: licenseStatus.licenseRef
+    });
+    setHandoffStatus(result);
+    if (result.ok) {
+      setMessage("Study Capture Pro is active in your extension.");
+    }
   }
 
   async function removeDevice(deviceRecordId) {
@@ -182,6 +207,18 @@ export default function ManageLicenseClient() {
                   </div>
                 )}
               </div>
+              {handoffStatus ? (
+                <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.045] p-4">
+                  <p className="text-sm font-semibold text-white">Extension activation</p>
+                  <p className={`mt-1 text-sm leading-6 ${handoffStatus.ok ? "text-mint" : "text-mist/62"}`}>
+                    {handoffStatus.pending
+                      ? "Activating Study Capture extension..."
+                      : handoffStatus.ok
+                        ? "Study Capture Pro is active in your extension."
+                        : handoffStatus.message || "Open Study Capture and use the manual license fallback."}
+                  </p>
+                </div>
+              ) : null}
             </div>
           ) : null}
 

@@ -89,6 +89,38 @@ Expected:
 8. Confirm amount is `₹799`.
 9. Confirm order notes include the email and `Study Capture Pro Lifetime`.
 
+## 1.1 Extension Purchase Handoff
+
+1. From the extension, click `Upgrade Pro`.
+2. Confirm the opened URL starts with `https://www.studycapture.co/upgrade?src=extension`.
+3. Confirm the URL includes `extId`.
+4. Complete checkout with a fresh paid email.
+5. Confirm `/success` shows the Pro email and license reference.
+6. Confirm the success page says Study Capture Pro is active in the extension.
+7. Reopen the extension and confirm the badge shows `PRO`.
+
+Expected:
+
+- Checkout copy says `Secure payment powered by Razorpay. Your license will be linked to this email.`
+- No developer/security implementation text is shown to customers.
+- The extension receives a server-verified license token through the website handoff.
+- Manual license code is still available only as a fallback.
+
+## 1.2 Extension Restore Handoff
+
+1. From a second browser/device, click `Activate Pro` in the extension.
+2. Confirm the website opens `/activate?src=extension` or `/manage-license?src=extension` with `extId`.
+3. Enter the paid email.
+4. Verify with the email code.
+5. Confirm the website detects active Pro access.
+6. Confirm the extension becomes Pro automatically.
+
+Expected:
+
+- No payment is started for an already paid email.
+- No client-side plan flag is trusted.
+- Device limit errors are shown if the paid email already has 3 active devices.
+
 ## 2. Supabase Payment Row Created
 
 Run:
