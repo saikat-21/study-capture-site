@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, Loader2, Monitor, Trash2 } from "lucide-react";
+import OtpDeliveryNotice from "./OtpDeliveryNotice";
 import { handleOtpPaste, normalizeOtpInput, OTP_MAX_LENGTH, OTP_PATTERN } from "../lib/otp-input";
 
 export default function ManageLicenseClient() {
@@ -15,11 +16,11 @@ export default function ManageLicenseClient() {
   const [loading, setLoading] = useState(false);
 
   async function sendOtp(event) {
-    event.preventDefault();
-    await run(async () => {
-      const result = await postJson("/api/auth/send-otp", { email });
+    event?.preventDefault();
+    return run(async () => {
+      await postJson("/api/auth/send-otp", { email });
+      setOtp("");
       setStep("otp");
-      setMessage(result.message);
     });
   }
 
@@ -64,8 +65,10 @@ export default function ManageLicenseClient() {
 
     try {
       await action();
+      return true;
     } catch (err) {
       setError(err.message);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -107,7 +110,7 @@ export default function ManageLicenseClient() {
 
           {step === "otp" ? (
             <form onSubmit={verifyOtp} className="space-y-5">
-              <p className="text-sm text-mist/58">Verification code sent to <span className="font-semibold text-white">{email}</span></p>
+              <OtpDeliveryNotice email={email} loading={loading} onResend={sendOtp} />
               <label className="block text-sm font-medium text-mist/75" htmlFor="manage-otp">
                 Verification code
               </label>

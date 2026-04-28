@@ -13,6 +13,7 @@ import {
   RefreshCw,
   ShieldCheck
 } from "lucide-react";
+import OtpDeliveryNotice from "./OtpDeliveryNotice";
 import { handleOtpPaste, normalizeOtpInput, OTP_MAX_LENGTH, OTP_PATTERN } from "../lib/otp-input";
 
 export default function AdminDebugClient() {
@@ -26,11 +27,11 @@ export default function AdminDebugClient() {
   const [loading, setLoading] = useState(false);
 
   async function sendOtp(event) {
-    event.preventDefault();
-    await run(async () => {
-      const result = await postJson("/api/auth/send-otp", { email });
+    event?.preventDefault();
+    return run(async () => {
+      await postJson("/api/auth/send-otp", { email });
+      setOtp("");
       setStep("otp");
-      setMessage(result.message);
     });
   }
 
@@ -72,8 +73,10 @@ export default function AdminDebugClient() {
 
     try {
       await action();
+      return true;
     } catch (err) {
       setError(err.message);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -118,9 +121,7 @@ export default function AdminDebugClient() {
 
       {step === "otp" ? (
         <AuthPanel title="Verify code" icon={KeyRound} onSubmit={verifyOtp} loading={loading} buttonText="Open debug">
-          <p className="text-sm text-mist/58">
-            Verification code sent to <span className="font-semibold text-white">{email}</span>
-          </p>
+          <OtpDeliveryNotice email={email} loading={loading} onResend={sendOtp} />
           <input
             inputMode="numeric"
             autoComplete="one-time-code"
