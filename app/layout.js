@@ -41,13 +41,56 @@ export const metadata = {
 
 export const viewport = {
   themeColor: "#071014",
-  colorScheme: "dark"
+  colorScheme: "dark light"
 };
+
+const themeScript = `
+(() => {
+  const storageKey = "study-capture-theme";
+  const allowed = new Set(["light", "dark", "system"]);
+  const root = document.documentElement;
+  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  const applyTheme = () => {
+    let preference = "system";
+
+    try {
+      const stored = window.localStorage.getItem(storageKey);
+      if (allowed.has(stored)) preference = stored;
+    } catch {
+      preference = "system";
+    }
+
+    const resolvedTheme = preference === "system"
+      ? (darkQuery.matches ? "dark" : "light")
+      : preference;
+    const useDark = resolvedTheme === "dark";
+
+    root.classList.toggle("dark", useDark);
+    root.dataset.theme = resolvedTheme;
+    root.dataset.themeMode = preference;
+    root.style.colorScheme = resolvedTheme;
+  };
+
+  applyTheme();
+  darkQuery.addEventListener?.("change", applyTheme);
+  window.__studyCaptureApplyTheme = applyTheme;
+  window.addEventListener("storage", (event) => {
+    if (event.key === storageKey) applyTheme();
+  });
+})();
+`;
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body>
+    <html
+      lang="en"
+      className="min-h-full bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white"
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body className="min-h-screen bg-white text-neutral-900 antialiased dark:bg-neutral-950 dark:text-white">
         <AppLayout>{children}</AppLayout>
       </body>
     </html>

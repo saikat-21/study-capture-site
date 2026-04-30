@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: "class",
   content: [
     "./app/**/*.{js,jsx,mdx}",
     "./components/**/*.{js,jsx,mdx}"
@@ -7,10 +8,9 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        ink: "#071014",
-        night: "#0B1115",
-        panel: "#101A20",
-        mist: "#E7F4EF",
+        ink: "rgb(var(--color-ink) / <alpha-value>)",
+        night: "rgb(var(--color-night) / <alpha-value>)",
+        mist: "rgb(var(--color-mist) / <alpha-value>)",
         mint: "#5FE0B7",
         lagoon: "#50C8E8",
         amber: "#F8C66A",
@@ -19,7 +19,7 @@ module.exports = {
       },
       boxShadow: {
         glow: "0 0 80px rgba(95, 224, 183, 0.16)",
-        panel: "0 28px 80px rgba(0, 0, 0, 0.36)"
+        panel: "var(--shadow-panel)"
       },
       animation: {
         "float-slow": "float-slow 9s ease-in-out infinite",

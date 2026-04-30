@@ -108,10 +108,10 @@ export default function TermsPage() {
               Study Capture Terms
             </p>
             <h1 className="mt-7 max-w-3xl text-4xl font-semibold leading-tight text-white sm:text-5xl">
-              Clear terms for a focused paid browser extension.
+              Terms of Service
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-8 text-mist/68">
-              These terms explain how Study Capture Pro access, payments, device limits, and acceptable usage work.
+              These terms govern your use of Study Capture, including Pro access, payments, and device limits.
             </p>
             <p className="mt-5 text-sm text-mist/50">Last updated: {lastUpdated}</p>
           </div>

@@ -110,7 +110,7 @@ export default function Home() {
 function HeroSection() {
   return (
     <section className="relative isolate flex min-h-[88svh] items-center overflow-hidden pt-16">
-      <div className="hero-grid absolute inset-0 opacity-80" aria-hidden="true" />
+      <div className="hero-grid absolute inset-0 opacity-55 dark:opacity-70" aria-hidden="true" />
       <HeroScene />
       <div className="section-shell relative z-10 grid gap-12 py-20 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:py-24">
         <div className="max-w-3xl animate-slide-up">
@@ -163,9 +163,9 @@ function HeroSection() {
 function HeroScene() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      <div className="absolute left-[6%] top-[18%] h-36 w-36 rounded-full border border-mint/25 opacity-40" />
-      <div className="absolute bottom-[10%] left-[12%] h-28 w-28 rounded-full border border-coral/20 opacity-40" />
-      <div className="absolute right-[8%] top-[14%] h-48 w-48 rounded-full border border-amber/25 opacity-45" />
+      <div className="absolute left-[6%] top-[18%] h-32 w-32 rounded-full border border-mint/20 opacity-20 dark:opacity-[0.28]" />
+      <div className="absolute bottom-[10%] left-[12%] h-24 w-24 rounded-full border border-violet/20 opacity-[0.18] dark:opacity-[0.24]" />
+      <div className="absolute right-[8%] top-[14%] h-44 w-44 rounded-full border border-amber/20 opacity-20 dark:opacity-[0.28]" />
       <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-ink via-ink/80 to-transparent" />
     </div>
   );

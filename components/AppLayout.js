@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Crown } from "lucide-react";
 import { proUrl } from "../lib/site";
+import ThemeToggle from "./ThemeToggle";
 
 const navItems = [
   ["Features", "/#features"],
@@ -22,7 +23,7 @@ export default function AppLayout({ children }) {
 function AppHeader() {
   return (
     <header className="sticky inset-x-0 top-0 z-50 border-b border-white/10 bg-ink/85 backdrop-blur-xl">
-      <div className="section-shell flex h-16 items-center justify-between gap-4">
+      <div className="section-shell flex h-16 items-center justify-between gap-3">
         <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="Study Capture home">
           <Image
             src="/study-capture-icon.png"
@@ -43,13 +44,17 @@ function AppHeader() {
           ))}
         </nav>
 
-        <a
-          href={proUrl}
-          className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-mint px-4 text-sm font-semibold text-ink shadow-glow transition hover:-translate-y-0.5 hover:bg-white focus:outline-none focus:ring-2 focus:ring-mint focus:ring-offset-2 focus:ring-offset-ink"
-        >
-          <Crown className="h-4 w-4" aria-hidden="true" />
-          Get Pro
-        </a>
+        <div className="flex shrink-0 items-center gap-2">
+          <ThemeToggle />
+          <a
+            href={proUrl}
+            className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-mint px-4 text-sm font-semibold text-ink shadow-glow transition hover:-translate-y-0.5 hover:bg-white focus:outline-none focus:ring-2 focus:ring-mint focus:ring-offset-2 focus:ring-offset-ink"
+          >
+            <Crown className="h-4 w-4" aria-hidden="true" />
+            <span className="hidden sm:inline">Get Pro</span>
+            <span className="sm:hidden">Pro</span>
+          </a>
+        </div>
       </div>
     </header>
   );
