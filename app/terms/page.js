@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { billingEmail, billingMailto } from "../../lib/site";
 
 export const metadata = {
@@ -10,7 +9,7 @@ export default function TermsPage() {
   return (
     <main className="min-h-screen bg-ink px-6 py-16 text-mist">
       <article className="mx-auto max-w-3xl">
-        <Link href="/" className="text-sm font-semibold text-mint">Study Capture</Link>
+        <p className="text-sm font-semibold text-mint">Study Capture</p>
         <h1 className="mt-8 text-4xl font-semibold text-white">Terms</h1>
         <p className="mt-4 text-mist/60">Last updated: April 25, 2026</p>
         <div className="mt-10 space-y-7 text-base leading-8 text-mist/70">

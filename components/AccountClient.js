@@ -77,7 +77,7 @@ export default function AccountClient() {
     <section className="mx-auto max-w-6xl">
       <div className="flex flex-col gap-5 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <Link href="/" className="text-sm font-semibold text-mint">Study Capture</Link>
+          <p className="text-sm font-semibold text-mint">Account</p>
           <h1 className="mt-4 text-4xl font-semibold text-white sm:text-5xl">Account login</h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-mist/62">
             Login or create your account with an email verification code. No password needed.

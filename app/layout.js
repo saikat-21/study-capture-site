@@ -1,4 +1,5 @@
 import "./globals.css";
+import AppLayout from "../components/AppLayout";
 
 export const metadata = {
   metadataBase: new URL("https://studycapture.co"),
@@ -46,7 +47,9 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AppLayout>{children}</AppLayout>
+      </body>
     </html>
   );
 }

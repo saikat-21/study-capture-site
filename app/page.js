@@ -96,7 +96,6 @@ const screenshotCards = [
 export default function Home() {
   return (
     <main className="min-h-screen overflow-hidden bg-ink text-mist">
-      <SiteHeader />
       <HeroSection />
       <FeatureSection />
       <BrowserSupportSection />
@@ -105,47 +104,6 @@ export default function Home() {
       <FAQSection />
       <SiteFooter />
     </main>
-  );
-}
-
-function SiteHeader() {
-  const nav = [
-    ["Features", "#features"],
-    ["Browsers", "#browser-support"],
-    ["Pricing", "#pricing"],
-    ["FAQ", "#faq"]
-  ];
-
-  return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-ink/80 backdrop-blur-xl">
-      <div className="section-shell flex h-16 items-center justify-between gap-4">
-        <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="Study Capture home">
-          <Image
-            src="/study-capture-icon.png"
-            alt=""
-            width={34}
-            height={34}
-            className="h-8 w-8 rounded-lg"
-            priority
-          />
-          <span className="text-sm font-semibold text-white sm:text-base">Study Capture</span>
-        </Link>
-        <nav aria-label="Primary navigation" className="hidden items-center gap-6 text-sm text-mist/72 md:flex">
-          {nav.map(([label, href]) => (
-            <a key={href} href={href} className="transition hover:text-white">
-              {label}
-            </a>
-          ))}
-        </nav>
-        <a
-          href={proUrl}
-          className="inline-flex h-10 items-center gap-2 rounded-full bg-mint px-4 text-sm font-semibold text-ink shadow-glow transition hover:-translate-y-0.5 hover:bg-white focus:outline-none focus:ring-2 focus:ring-mint focus:ring-offset-2 focus:ring-offset-ink"
-        >
-          <Crown className="h-4 w-4" aria-hidden="true" />
-          Get Pro
-        </a>
-      </div>
-    </header>
   );
 }
 

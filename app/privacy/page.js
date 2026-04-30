@@ -95,19 +95,7 @@ export default function PrivacyPage() {
   return (
     <main className="min-h-screen bg-ink px-6 py-10 text-mist sm:py-14">
       <article className="mx-auto max-w-5xl">
-        <nav className="flex items-center justify-between gap-4">
-          <Link href="/" className="text-sm font-semibold text-mint">
-            Study Capture
-          </Link>
-          <Link
-            href="/contact"
-            className="rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-mist/70 transition hover:border-mint/40 hover:text-white"
-          >
-            Contact
-          </Link>
-        </nav>
-
-        <section className="mt-14 grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
+        <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
           <div>
             <p className="inline-flex items-center gap-2 rounded-full border border-mint/20 bg-mint/10 px-3 py-1 text-sm font-semibold text-mint">
               <ShieldCheck className="h-4 w-4" aria-hidden="true" />
