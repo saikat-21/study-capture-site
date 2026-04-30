@@ -277,18 +277,25 @@ Check the paid email inbox.
 
 Confirm the welcome email:
 
-- Subject: `Welcome to Study Capture Pro — License Activated 🎉`
+- Subject: `Welcome to Study Capture Pro 🎉`
 - Sent from the configured Resend sender.
 - Includes the paid email.
+- Includes `Plan: Lifetime`.
+- Includes `Price paid: ₹499 (Introductory)`.
+- Includes `Original: ₹799`.
+- Includes OTP-based restore instructions.
+- Includes the 3 active browsers/devices usage limit.
 - Does not include a reusable license code/reference.
-- Includes `billing@studycapture.co` for billing/refunds/invoices/license purchase questions.
-- Includes `support@studycapture.co` for product help.
+- Includes `support@studycapture.co`.
 
 If no email arrives:
 
-- Check Vercel logs for `Welcome email delivery failed`.
+- Check Vercel logs for `Study Capture Pro confirmation email requested`.
+- Check Vercel logs for `Sending Study Capture Pro confirmation email`.
+- Check Vercel logs for `Study Capture email sent via Resend` or `Study Capture Pro confirmation email attempt failed`.
 - Confirm `RESEND_API_KEY` and `RESEND_FROM_EMAIL` are configured.
 - Confirm the domain/sender is verified in Resend.
+- Confirm `public.email_events` has one row for the order with `status = sent`.
 
 ## 7. Extension Activate Pro Unlocks Pro
 
@@ -459,7 +466,8 @@ Confirm:
 - `/api/razorpay/webhook` returns success.
 - No duplicate license is created.
 - No duplicate active subscription is created.
-- Welcome email is not sent again for an already-active license.
+- Confirmation email is not sent again for the same payment order.
+- `public.email_events` still has one `sent` row for the order.
 
 Run:
 

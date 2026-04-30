@@ -42,6 +42,15 @@ export async function POST(request) {
     const eventType = event.event;
     const { orderId, paymentId, email } = await extractPaymentDetails(event);
 
+    console.log("Razorpay webhook received.", {
+      eventId,
+      eventType,
+      orderId,
+      paymentId,
+      email,
+      payload: event
+    });
+
     if (!HANDLED_EVENTS.has(eventType)) {
       await markWebhookEventProcessed({
         eventId,
@@ -102,9 +111,13 @@ export async function POST(request) {
       rawEvent: payment.raw_event
     });
 
-    if (!license.already_active) {
-      await sendWelcomeEmail(email);
-    }
+    await sendWelcomeEmail(email, {
+      payment,
+      license,
+      trigger: "razorpay-webhook",
+      eventId,
+      eventType
+    });
 
     await markWebhookEventProcessed({
       eventId,

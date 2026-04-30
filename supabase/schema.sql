@@ -37,7 +37,7 @@ create table if not exists public.subscriptions (
   provider text not null default 'razorpay',
   provider_order_id text,
   provider_payment_id text,
-  amount integer not null default 79900,
+  amount integer not null default 49900,
   currency text not null default 'INR',
   lifetime_access boolean not null default true,
   started_at timestamptz,
@@ -82,7 +82,7 @@ create table if not exists public.payments (
   provider_checkout_id text,
   provider_payment_id text,
   provider_event_id text,
-  amount integer not null default 79900,
+  amount integer not null default 49900,
   currency text not null default 'INR',
   status text not null default 'pending' check (
     status in ('pending', 'paid', 'failed', 'refunded', 'chargeback')
@@ -141,7 +141,7 @@ select
     else 'free'
   end,
   'razorpay',
-  79900,
+  49900,
   'INR',
   true,
   l.activated_at,
@@ -190,6 +190,38 @@ create table if not exists public.webhook_events (
   created_at timestamptz not null default now(),
   unique (provider, event_id)
 );
+
+create table if not exists public.email_events (
+  id bigint generated always as identity primary key,
+  event_key text not null unique,
+  type text not null,
+  email citext not null,
+  payment_id uuid references public.payments(id) on delete set null,
+  license_id uuid references public.licenses(id) on delete set null,
+  status text not null default 'pending' check (
+    status in ('pending', 'sent', 'failed')
+  ),
+  attempts integer not null default 0,
+  provider_message_id text,
+  metadata jsonb not null default '{}'::jsonb,
+  last_error text,
+  sent_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists email_events_email_idx
+  on public.email_events (email, created_at desc);
+
+create index if not exists email_events_status_idx
+  on public.email_events (status, updated_at desc);
+
+alter table public.email_events add column if not exists payment_id uuid references public.payments(id) on delete set null;
+alter table public.email_events add column if not exists license_id uuid references public.licenses(id) on delete set null;
+alter table public.email_events add column if not exists provider_message_id text;
+alter table public.email_events add column if not exists metadata jsonb not null default '{}'::jsonb;
+alter table public.email_events add column if not exists last_error text;
+alter table public.email_events add column if not exists sent_at timestamptz;
 
 create table if not exists public.auth_events (
   id bigint generated always as identity primary key,
@@ -243,12 +275,18 @@ create trigger payments_set_updated_at
 before update on public.payments
 for each row execute function public.set_updated_at();
 
+drop trigger if exists email_events_set_updated_at on public.email_events;
+create trigger email_events_set_updated_at
+before update on public.email_events
+for each row execute function public.set_updated_at();
+
 alter table public.users enable row level security;
 alter table public.licenses enable row level security;
 alter table public.subscriptions enable row level security;
 alter table public.devices enable row level security;
 alter table public.payments enable row level security;
 alter table public.webhook_events enable row level security;
+alter table public.email_events enable row level security;
 alter table public.auth_events enable row level security;
 
 drop policy if exists "users_select_own" on public.users;
@@ -329,7 +367,7 @@ using (
   )
 );
 
--- webhook_events and auth_events intentionally have no anon/authenticated policies.
+-- webhook_events, email_events, and auth_events intentionally have no anon/authenticated policies.
 -- Website API routes use SUPABASE_SERVICE_ROLE_KEY and perform ownership checks server-side.
 
 -- Razorpay payment webhooks should update public.payments to paid and upsert

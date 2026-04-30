@@ -85,9 +85,11 @@ export async function POST(request) {
       rawEvent: payment.raw_event
     });
 
-    if (!license.already_active) {
-      await sendWelcomeEmail(email);
-    }
+    await sendWelcomeEmail(email, {
+      payment,
+      license,
+      trigger: "verify-payment"
+    });
 
     const activationGrant = signActivationGrant({
       email,
@@ -103,7 +105,7 @@ export async function POST(request) {
       metadata: {
         razorpayOrderId,
         razorpayPaymentId,
-        licenseRef: license.license_ref
+        licenseId: license.id || null
       }
     });
 
