@@ -4,7 +4,7 @@ import UpgradeFlow from "../../components/UpgradeFlow";
 
 export const metadata = {
   title: "Upgrade to Pro Lifetime",
-  description: "Upgrade to Study Capture Pro Lifetime for ₹799 with secure Razorpay Checkout."
+  description: "Upgrade to Study Capture Pro Lifetime for ₹499 with secure Razorpay Checkout."
 };
 
 export default function UpgradePage() {

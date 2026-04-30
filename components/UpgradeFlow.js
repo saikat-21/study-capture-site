@@ -7,8 +7,9 @@ import { ArrowRight, Check, Loader2, Mail } from "lucide-react";
 const CHECKOUT_KEY = "studyCaptureCheckout";
 const DEFAULT_PRICING = {
   test_mode: false,
-  paid_price_inr: 799,
-  public_price_inr: 799
+  paid_price_inr: 499,
+  public_price_inr: 499,
+  original_price_inr: 799
 };
 
 export default function UpgradeFlow() {
@@ -58,7 +59,8 @@ export default function UpgradeFlow() {
 
   const displayPrice = pricing.test_mode
     ? pricing.paid_price_inr
-    : pricing.public_price_inr || DEFAULT_PRICING.public_price_inr;
+    : pricing.paid_price_inr || pricing.public_price_inr || DEFAULT_PRICING.paid_price_inr;
+  const originalPrice = pricing.original_price_inr || DEFAULT_PRICING.original_price_inr;
 
   function continueToCheckout(event) {
     event.preventDefault();
@@ -100,11 +102,23 @@ export default function UpgradeFlow() {
           <div className="mt-5 rounded-2xl border border-mint/25 bg-mint/10 px-4 py-3 text-sm font-semibold text-mint">
             Founder live test mode — ₹{pricing.paid_price_inr}
           </div>
-        ) : null}
+        ) : (
+          <div className="mt-5 inline-flex rounded-full border border-amber/25 bg-amber/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-amber">
+            Introductory offer
+          </div>
+        )}
         <div className="mt-6 flex flex-wrap items-end gap-3">
           <h1 className="text-5xl font-semibold text-white">₹{displayPrice}</h1>
-          <p className="pb-2 text-sm font-medium text-mist/58">Founder Price · one time</p>
+          {!pricing.test_mode ? (
+            <span className="pb-2 text-2xl font-semibold text-mist/38 line-through">₹{originalPrice}</span>
+          ) : null}
+          <p className="pb-2 text-sm font-medium text-mist/58">one-time payment · lifetime Pro access</p>
         </div>
+        {!pricing.test_mode ? (
+          <p className="mt-3 text-sm font-medium text-mint">
+            Limited-time introductory price for early users.
+          </p>
+        ) : null}
         <p className="mt-6 text-lg leading-8 text-mist/72">
           Upgrade once and unlock the full study workflow across your personal browsers and devices.
         </p>

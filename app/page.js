@@ -63,7 +63,7 @@ const faqs = [
   {
     question: "What is included in the Pro Lifetime Plan?",
     answer:
-      "The Founder Price gives lifetime Pro access for advanced capture workflows, Study Book export, and future Pro improvements."
+      "The introductory offer gives lifetime Pro access for advanced capture workflows, Study Book export, and future Pro improvements."
   },
   {
     question: "Can every website be captured?",
@@ -350,7 +350,7 @@ function PricingSection() {
         <SectionIntro
           eyebrow="Pricing"
           title="Start free. Upgrade once when you are ready."
-          text="Simple plans for a focused browser extension, with a limited Founder Price for lifetime Pro access."
+          text="Simple plans for a focused browser extension, with a limited-time introductory price for lifetime Pro access."
         />
         <div className="mt-12 grid gap-5 lg:grid-cols-2">
           <PricingCard
@@ -364,9 +364,10 @@ function PricingSection() {
           <PricingCard
             featured
             name="Pro Lifetime Plan"
-            price="₹799"
-            tag="Founder Price"
-            description="Lifetime access for deeper Study Book workflows."
+            price="₹499"
+            originalPrice="₹799"
+            tag="Introductory offer"
+            description="Limited-time introductory price for early users."
             cta="Get Pro"
             href={proUrl}
             items={["Multi-page Study Books", "Reading Capture mode", "Download and keep workflows", "Future Pro improvements included"]}
@@ -377,7 +378,7 @@ function PricingSection() {
   );
 }
 
-function PricingCard({ name, price, tag, description, cta, href, items, featured = false }) {
+function PricingCard({ name, price, originalPrice, tag, description, cta, href, items, featured = false }) {
   return (
     <article className={`premium-border rounded-3xl p-6 sm:p-8 ${featured ? "bg-mint text-ink shadow-glow" : "glass-panel text-mist"}`}>
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -393,8 +394,16 @@ function PricingCard({ name, price, tag, description, cta, href, items, featured
       </div>
       <div className="mt-8 flex items-end gap-2">
         <span className="text-5xl font-semibold">{price}</span>
+        {originalPrice ? (
+          <span className={`pb-2 text-2xl font-semibold line-through ${featured ? "text-ink/45" : "text-mist/40"}`}>
+            {originalPrice}
+          </span>
+        ) : null}
         {featured ? <span className="pb-2 text-sm font-medium text-ink/65">one time</span> : null}
       </div>
+      {featured ? (
+        <p className="mt-3 text-sm font-semibold text-ink/72">One-time payment · lifetime Pro access</p>
+      ) : null}
       <ul className="mt-8 space-y-3">
         {items.map((item) => (
           <li key={item} className="flex gap-3 text-sm leading-6">

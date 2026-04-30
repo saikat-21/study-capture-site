@@ -37,7 +37,8 @@ where schemaname = 'public'
   - `ADMIN_EMAILS=founder@studycapture.co`
   - `RESEND_API_KEY`
   - `RESEND_FROM_EMAIL=Study Capture <billing@studycapture.co>`
-  - `PUBLIC_PRICE_INR=799`
+  - `PUBLIC_PRICE_INR=499`
+  - `ORIGINAL_PRICE_INR=799`
   - `ENABLE_INTERNAL_TEST_PAYMENTS=false` unless running the founder test below
 
 ## 0.1 Supabase Numeric Verification-Code Auth
@@ -88,7 +89,8 @@ Temporarily set these Vercel env vars and redeploy:
 - `ENABLE_INTERNAL_TEST_PAYMENTS=true`
 - `FOUNDER_TEST_TOKEN=<secret-random-string>`
 - `TEST_PRICE_INR=1`
-- `PUBLIC_PRICE_INR=799`
+- `PUBLIC_PRICE_INR=499`
+- `ORIGINAL_PRICE_INR=799`
 
 Test URL:
 
@@ -120,9 +122,9 @@ Negative checks:
 
 1. Open `https://www.studycapture.co/upgrade?src=extension&test=1&token=wrong-token`.
 2. Confirm no founder test banner appears.
-3. Confirm checkout remains ₹799.
+3. Confirm checkout remains ₹499.
 4. Set `ENABLE_INTERNAL_TEST_PAYMENTS=false`, redeploy, and open the correct token URL.
-5. Confirm the token does nothing and checkout remains ₹799.
+5. Confirm the token does nothing and checkout remains ₹499.
 
 Disable after testing:
 
@@ -135,11 +137,11 @@ Disable after testing:
 1. Open `https://studycapture.co/upgrade?src=website`.
 2. Enter a fresh email.
 3. Continue to `/checkout`.
-4. Click `Pay ₹799 securely`.
+4. Click `Pay ₹499 securely`.
 5. Complete the Razorpay payment.
 6. In Razorpay Dashboard, open Payments.
 7. Confirm the payment status is `captured`.
-8. Confirm amount is `₹799`.
+8. Confirm amount is `₹499`.
 9. Confirm order notes include the email and `Study Capture Pro Lifetime`.
 
 ## 1.1 Extension Purchase Handoff
@@ -198,7 +200,7 @@ order by created_at desc;
 Confirm:
 
 - `provider = razorpay`
-- `amount = 79900`
+- `amount = 49900`
 - `currency = INR`
 - `status = paid`
 - `provider_order_id` starts with `order_`
@@ -231,7 +233,7 @@ Confirm:
 - `plan = pro_lifetime`
 - `status = active`
 - `provider = razorpay`
-- `amount = 79900`
+- `amount = 49900`
 - `currency = INR`
 - `lifetime_access = true`
 - `started_at` is not null
@@ -367,7 +369,7 @@ Confirm active devices remain `3` in Supabase.
 1. Open `https://studycapture.co/upgrade?src=website`.
 2. Enter the same email that already has `paid_lifetime`.
 3. Continue to checkout.
-4. Click `Pay ₹799 securely`.
+4. Click `Pay ₹499 securely`.
 
 Expected:
 
@@ -395,7 +397,7 @@ Expected:
 
 1. Open `/upgrade` with a brand-new unpaid email.
 2. Continue to `/checkout`.
-3. Click `Pay ₹799 securely`.
+3. Click `Pay ₹499 securely`.
 4. Close/dismiss the Razorpay modal.
 
 Expected:

@@ -11,7 +11,8 @@ NEXT_PUBLIC_RAZORPAY_KEY_ID=<same live key id>
 RAZORPAY_WEBHOOK_SECRET=<webhook secret you create in Razorpay>
 NEXT_PUBLIC_SITE_URL=https://studycapture.co
 NEXT_PUBLIC_BILLING_EMAIL=billing@studycapture.co
-PUBLIC_PRICE_INR=799
+PUBLIC_PRICE_INR=499
+ORIGINAL_PRICE_INR=799
 ENABLE_INTERNAL_TEST_PAYMENTS=false
 FOUNDER_TEST_TOKEN=
 TEST_PRICE_INR=1
@@ -44,7 +45,7 @@ In Razorpay Dashboard live mode:
 
 1. `/upgrade` captures the license email and preserves `src` and `reason`.
 2. `/checkout` calls `/api/razorpay/create-order`.
-3. The server creates a Razorpay order for the server-resolved price. Public checkout is `79900` paise in `INR`.
+3. The server creates a Razorpay order for the server-resolved price. Public checkout is `49900` paise in `INR`, with `799` stored as the original launch reference price.
 4. The browser opens Razorpay Checkout using `order_id`.
 5. Checkout returns `razorpay_payment_id`, `razorpay_order_id`, and `razorpay_signature`.
 6. `/api/razorpay/verify-payment` verifies the signature with `RAZORPAY_KEY_SECRET`.
@@ -61,7 +62,7 @@ For an internal live Razorpay smoke test, temporarily set `ENABLE_INTERNAL_TEST_
 https://www.studycapture.co/upgrade?src=extension&test=1&token=<FOUNDER_TEST_TOKEN>
 ```
 
-The server validates the token before creating the order. Valid founder test orders use `100` paise, save `source = internal_test`, and keep test metadata in `payments.raw_event.study_capture`. Wrong, missing, or disabled tokens stay on the public `79900` paise path. Disable by setting `ENABLE_INTERNAL_TEST_PAYMENTS=false` and redeploying.
+The server validates the token before creating the order. Valid founder test orders use `100` paise, save `source = internal_test`, and keep test metadata in `payments.raw_event.study_capture`. Wrong, missing, or disabled tokens stay on the public `49900` paise path. Disable by setting `ENABLE_INTERNAL_TEST_PAYMENTS=false` and redeploying.
 
 ## Persistence
 

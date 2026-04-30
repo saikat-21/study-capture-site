@@ -15,8 +15,9 @@ const CHECKOUT_KEY = "studyCaptureCheckout";
 const SUCCESS_KEY = "studyCapturePaymentSuccess";
 const DEFAULT_PRICING = {
   test_mode: false,
-  paid_price_inr: 799,
-  public_price_inr: 799
+  paid_price_inr: 499,
+  public_price_inr: 499,
+  original_price_inr: 799
 };
 
 export default function CheckoutClient() {
@@ -87,7 +88,8 @@ export default function CheckoutClient() {
   const canStartPayment = canPay && !pricingLoading;
   const displayPrice = pricing.test_mode
     ? pricing.paid_price_inr
-    : pricing.public_price_inr || DEFAULT_PRICING.public_price_inr;
+    : pricing.paid_price_inr || pricing.public_price_inr || DEFAULT_PRICING.paid_price_inr;
+  const originalPrice = pricing.original_price_inr || DEFAULT_PRICING.original_price_inr;
 
   async function startPayment() {
     setError("");
@@ -215,12 +217,26 @@ export default function CheckoutClient() {
           <div className="mt-5 rounded-2xl border border-mint/25 bg-mint/10 px-4 py-3 text-sm font-semibold text-mint">
             Founder live test mode — ₹{pricing.paid_price_inr}
           </div>
-        ) : null}
+        ) : (
+          <div className="mt-5 inline-flex rounded-full border border-amber/25 bg-amber/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-amber">
+            Introductory offer
+          </div>
+        )}
         <h1 className="mt-4 text-4xl font-semibold text-white">Study Capture Pro Lifetime</h1>
-        <div className="mt-7 flex items-end gap-3">
+        <div className="mt-7 flex flex-wrap items-end gap-3">
           <span className="text-5xl font-semibold text-white">₹{displayPrice}</span>
-          <span className="pb-2 text-sm text-mist/55">one-time payment</span>
+          {!pricing.test_mode ? (
+            <span className="pb-2 text-2xl font-semibold text-mist/38 line-through">₹{originalPrice}</span>
+          ) : null}
+          <span className="pb-2 text-sm text-mist/55">
+            {pricing.test_mode ? "founder live test payment" : "payable today · one-time payment · lifetime Pro access"}
+          </span>
         </div>
+        {!pricing.test_mode ? (
+          <p className="mt-3 text-sm font-medium text-mint">
+            Limited-time introductory price for early users.
+          </p>
+        ) : null}
         <div className="mt-8 rounded-2xl border border-mint/20 bg-mint/10 p-4">
           <div className="flex gap-3">
             <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-mint" aria-hidden="true" />
