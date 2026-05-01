@@ -22,23 +22,23 @@ export default function AppLayout({ children }) {
 
 function AppHeader() {
   return (
-    <header className="sticky inset-x-0 top-0 z-50 border-b border-white/10 bg-ink/85 backdrop-blur-xl">
-      <div className="section-shell flex h-16 items-center justify-between gap-3">
-        <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="Study Capture home">
+    <header className="sticky inset-x-0 top-0 z-50 border-b border-line bg-ink/78 backdrop-blur-[8px]">
+      <div className="section-shell flex min-h-[72px] items-center justify-between gap-4 py-3">
+        <Link href="/" className="flex min-w-0 items-center gap-4" aria-label="Study Capture home">
           <Image
             src="/study-capture-icon.png"
             alt=""
-            width={34}
-            height={34}
-            className="h-8 w-8 rounded-lg"
+            width={40}
+            height={40}
+            className="h-10 w-10 rounded-xl"
             priority
           />
-          <span className="truncate text-sm font-semibold text-white sm:text-base">Study Capture</span>
+          <span className="truncate text-sm font-semibold text-mist sm:text-base">Study Capture</span>
         </Link>
 
         <nav aria-label="Primary navigation" className="hidden items-center gap-6 text-sm text-mist/72 md:flex">
           {navItems.map(([label, href]) => (
-            <Link key={href} href={href} className="transition hover:text-white">
+            <Link key={href} href={href} className="transition hover:text-mist">
               {label}
             </Link>
           ))}
@@ -48,7 +48,7 @@ function AppHeader() {
           <ThemeToggle />
           <a
             href={proUrl}
-            className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-mint px-4 text-sm font-semibold text-ink shadow-glow transition hover:-translate-y-0.5 hover:bg-white focus:outline-none focus:ring-2 focus:ring-mint focus:ring-offset-2 focus:ring-offset-ink"
+            className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-mint px-4 text-sm font-semibold text-strong shadow-glow transition hover:-translate-y-0.5 hover:bg-mint/85 focus:outline-none focus:ring-2 focus:ring-mint focus:ring-offset-2 focus:ring-offset-ink"
           >
             <Crown className="h-4 w-4" aria-hidden="true" />
             <span className="hidden sm:inline">Get Pro</span>

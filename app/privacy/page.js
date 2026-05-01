@@ -101,7 +101,7 @@ export default function PrivacyPage() {
               <ShieldCheck className="h-4 w-4" aria-hidden="true" />
               Privacy Policy
             </p>
-            <h1 className="mt-7 max-w-3xl text-4xl font-semibold leading-tight text-white sm:text-5xl">
+            <h1 className="mt-7 max-w-3xl text-4xl font-semibold leading-tight text-mist sm:text-5xl">
               Study Capture keeps your study workflow personal, practical, and under your control.
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-8 text-mist/68">
@@ -110,15 +110,15 @@ export default function PrivacyPage() {
             <p className="mt-5 text-sm text-mist/50">Last updated: {lastUpdated}</p>
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-5 shadow-panel sm:p-6">
+          <div className="rounded-3xl border border-line bg-panel/80 p-5 shadow-panel sm:p-6">
             <div className="grid gap-3 sm:grid-cols-2">
               {trustBadges.map((badge) => (
                 <div
                   key={badge}
-                  className="flex min-h-20 items-start gap-3 rounded-2xl border border-white/10 bg-ink/45 p-4"
+                  className="flex min-h-20 items-start gap-3 rounded-2xl border border-line bg-ink/45 p-4"
                 >
                   <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-mint" aria-hidden="true" />
-                  <span className="text-sm font-semibold leading-6 text-white">{badge}</span>
+                  <span className="text-sm font-semibold leading-6 text-mist">{badge}</span>
                 </div>
               ))}
             </div>
@@ -155,7 +155,7 @@ export default function PrivacyPage() {
               <Mail className="h-5 w-5" aria-hidden="true" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-white">9. Contact</h2>
+              <h2 className="text-xl font-semibold text-mist">9. Contact</h2>
               <p className="mt-3 max-w-2xl text-base leading-8 text-mist/70">
                 For privacy or support questions, contact{" "}
                 <a className="font-semibold text-mint" href={supportMailto}>
@@ -167,16 +167,16 @@ export default function PrivacyPage() {
           </div>
         </section>
 
-        <footer className="mt-14 flex flex-col gap-4 border-t border-white/10 py-8 text-sm text-mist/50 sm:flex-row sm:items-center sm:justify-between">
+        <footer className="mt-14 flex flex-col gap-4 border-t border-line py-8 text-sm text-mist/50 sm:flex-row sm:items-center sm:justify-between">
           <p>Study Capture</p>
           <div className="flex flex-wrap gap-4">
-            <Link className="transition hover:text-white" href="/contact">
+            <Link className="transition hover:text-mist" href="/contact">
               Contact
             </Link>
-            <Link className="transition hover:text-white" href="/privacy">
+            <Link className="transition hover:text-mist" href="/privacy">
               Privacy
             </Link>
-            <Link className="transition hover:text-white" href="/terms">
+            <Link className="transition hover:text-mist" href="/terms">
               Terms
             </Link>
           </div>
@@ -188,11 +188,11 @@ export default function PrivacyPage() {
 
 function PrivacySignal({ icon, title, text }) {
   return (
-    <div className="rounded-3xl border border-white/10 bg-white/[0.035] p-5">
-      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/[0.07] text-mint">
+    <div className="rounded-3xl border border-line bg-panel/70 p-5">
+      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-panel/85 text-mint">
         {icon}
       </div>
-      <h2 className="mt-5 text-lg font-semibold text-white">{title}</h2>
+      <h2 className="mt-5 text-lg font-semibold text-mist">{title}</h2>
       <p className="mt-3 text-sm leading-7 text-mist/62">{text}</p>
     </div>
   );
@@ -200,8 +200,8 @@ function PrivacySignal({ icon, title, text }) {
 
 function PolicySection({ section }) {
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/[0.035] p-6 sm:p-8">
-      <h2 className="text-xl font-semibold text-white">{section.title}</h2>
+    <section className="rounded-3xl border border-line bg-panel/70 p-6 sm:p-8">
+      <h2 className="text-xl font-semibold text-mist">{section.title}</h2>
       <p className="mt-4 text-base leading-8 text-mist/70">{section.body}</p>
       {section.items ? (
         <ul className="mt-5 grid gap-3 text-sm leading-7 text-mist/72 sm:grid-cols-2">

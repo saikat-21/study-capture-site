@@ -107,7 +107,7 @@ export default function TermsPage() {
               <ShieldCheck className="h-4 w-4" aria-hidden="true" />
               Study Capture Terms
             </p>
-            <h1 className="mt-7 max-w-3xl text-4xl font-semibold leading-tight text-white sm:text-5xl">
+            <h1 className="mt-7 max-w-3xl text-4xl font-semibold leading-tight text-mist sm:text-5xl">
               Terms of Service
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-8 text-mist/68">
@@ -116,7 +116,7 @@ export default function TermsPage() {
             <p className="mt-5 text-sm text-mist/50">Last updated: {lastUpdated}</p>
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-6 shadow-panel">
+          <div className="rounded-3xl border border-line bg-panel/80 p-6 shadow-panel">
             <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
               <QuickFact icon={CreditCard} title="One-time payment" text="Introductory Pro price: ₹499" />
               <QuickFact icon={ShieldCheck} title="Lifetime Pro" text="Valid purchases remain active." />
@@ -137,7 +137,7 @@ export default function TermsPage() {
               <Mail className="h-5 w-5" aria-hidden="true" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-white">10. Contact</h2>
+              <h2 className="text-xl font-semibold text-mist">10. Contact</h2>
               <p className="mt-3 max-w-2xl text-base leading-8 text-mist/70">
                 For billing, refunds, invoices, or payment questions, contact{" "}
                 <a className="font-semibold text-mint" href={billingMailto}>
@@ -159,11 +159,11 @@ export default function TermsPage() {
 
 function QuickFact({ icon: Icon, title, text }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-ink/45 p-4">
+    <div className="rounded-2xl border border-line bg-ink/45 p-4">
       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-mint/12 text-mint">
         <Icon className="h-5 w-5" aria-hidden="true" />
       </div>
-      <h2 className="mt-4 text-sm font-semibold text-white">{title}</h2>
+      <h2 className="mt-4 text-sm font-semibold text-mist">{title}</h2>
       <p className="mt-2 text-sm leading-6 text-mist/60">{text}</p>
     </div>
   );
@@ -171,12 +171,12 @@ function QuickFact({ icon: Icon, title, text }) {
 
 function TermsSection({ section }) {
   return (
-    <section className="rounded-3xl border border-white/10 bg-white/[0.035] p-6 sm:p-8">
-      <h2 className="text-xl font-semibold text-white">{section.title}</h2>
+    <section className="rounded-3xl border border-line bg-panel/70 p-6 sm:p-8">
+      <h2 className="text-xl font-semibold text-mist">{section.title}</h2>
       <p className="mt-4 text-base leading-8 text-mist/70">{section.body}</p>
       <ul className="mt-5 grid gap-3 text-sm leading-7 text-mist/72 md:grid-cols-3">
         {section.items.map((item) => (
-          <li key={item} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+          <li key={item} className="rounded-2xl border border-line bg-panel/70 p-4">
             {item}
           </li>
         ))}

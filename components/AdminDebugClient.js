@@ -84,10 +84,10 @@ export default function AdminDebugClient() {
 
   return (
     <section className="mx-auto max-w-7xl">
-      <div className="flex flex-col gap-6 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-6 border-b border-line pb-8 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <Link href="/admin" className="text-sm font-semibold text-mint">Study Capture Admin</Link>
-          <h1 className="mt-4 text-4xl font-semibold text-white sm:text-5xl">Founder Debug</h1>
+          <h1 className="mt-4 text-4xl font-semibold text-mist sm:text-5xl">Founder Debug</h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-mist/62">
             Founder-only view for recent payments, generated licenses, and browser/device activations.
           </p>
@@ -97,7 +97,7 @@ export default function AdminDebugClient() {
             type="button"
             onClick={refreshDebug}
             disabled={loading}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/12 px-5 text-sm font-semibold text-white transition hover:border-mint/50 hover:bg-white/[0.06] disabled:opacity-60"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-line px-5 text-sm font-semibold text-mist transition hover:border-mint/50 hover:bg-panel/75 disabled:opacity-60"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <RefreshCw className="h-4 w-4" aria-hidden="true" />}
             Refresh
@@ -113,7 +113,7 @@ export default function AdminDebugClient() {
             onChange={(event) => setEmail(event.target.value)}
             required
             autoComplete="email"
-            className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 text-base text-white outline-none focus:border-mint/60"
+            className="h-14 w-full rounded-2xl border border-line bg-panel/80 px-4 py-4 text-base text-mist outline-none focus:border-mint/60"
             placeholder="founder@studycapture.co"
           />
         </AuthPanel>
@@ -131,7 +131,7 @@ export default function AdminDebugClient() {
             onPaste={(event) => handleOtpPaste(event, setOtp)}
             required
             maxLength={OTP_MAX_LENGTH}
-            className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 text-base tracking-[0.22em] text-white outline-none focus:border-mint/60"
+            className="h-14 w-full rounded-2xl border border-line bg-panel/80 px-4 py-4 text-base tracking-[0.22em] text-mist outline-none focus:border-mint/60"
             placeholder="12345678"
             title="Enter the verification code from your email."
           />
@@ -211,19 +211,19 @@ function AuthPanel({ title, icon: Icon, onSubmit, loading, buttonText, children 
   return (
     <form
       onSubmit={onSubmit}
-      className="mt-8 max-w-xl rounded-3xl border border-white/10 bg-[#101A20] p-6 shadow-panel sm:p-8"
+      className="mt-8 max-w-xl rounded-3xl border border-line bg-panel p-6 shadow-panel sm:p-8"
     >
       <div className="mb-6 flex items-center gap-3">
         <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-mint/12 text-mint">
           <Icon className="h-5 w-5" aria-hidden="true" />
         </span>
-        <h2 className="text-2xl font-semibold text-white">{title}</h2>
+        <h2 className="text-2xl font-semibold text-mist">{title}</h2>
       </div>
       <div className="space-y-5">{children}</div>
       <button
         type="submit"
         disabled={loading}
-        className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-ink transition hover:bg-white disabled:opacity-65"
+        className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-strong transition hover:bg-panel disabled:opacity-65"
       >
         {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Check className="h-4 w-4" aria-hidden="true" />}
         {buttonText}
@@ -234,22 +234,22 @@ function AuthPanel({ title, icon: Icon, onSubmit, loading, buttonText, children 
 
 function Metric({ label, value, icon: Icon }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-5">
+    <div className="rounded-2xl border border-line bg-panel/80 p-5">
       <Icon className="h-5 w-5 text-mint" aria-hidden="true" />
       <p className="mt-4 text-sm text-mist/50">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-white">{value}</p>
+      <p className="mt-1 text-2xl font-semibold text-mist">{value}</p>
     </div>
   );
 }
 
 function DebugPanel({ title, icon: Icon, children }) {
   return (
-    <section className="rounded-3xl border border-white/10 bg-[#101A20] p-6 shadow-panel">
+    <section className="rounded-3xl border border-line bg-panel p-6 shadow-panel">
       <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-mint">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-panel/70 text-mint">
           <Icon className="h-5 w-5" aria-hidden="true" />
         </span>
-        <h2 className="text-xl font-semibold text-white">{title}</h2>
+        <h2 className="text-xl font-semibold text-mist">{title}</h2>
       </div>
       <div className="mt-5 space-y-3">{children}</div>
     </section>
@@ -258,10 +258,10 @@ function DebugPanel({ title, icon: Icon, children }) {
 
 function DebugRow({ title, badge, meta, detail }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+    <div className="rounded-2xl border border-line bg-panel/70 p-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="font-semibold text-white">{title}</p>
+          <p className="font-semibold text-mist">{title}</p>
           <p className="mt-1 text-sm text-mist/60">{meta}</p>
         </div>
         <span className="w-fit rounded-full bg-mint/10 px-3 py-1 text-xs font-semibold text-mint">
@@ -274,7 +274,7 @@ function DebugRow({ title, badge, meta, detail }) {
 }
 
 function EmptyState() {
-  return <p className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-sm text-mist/55">No records yet.</p>;
+  return <p className="rounded-2xl border border-line bg-panel/70 p-4 text-sm text-mist/55">No records yet.</p>;
 }
 
 async function postJson(url, body, headers = {}) {

@@ -10,7 +10,7 @@ export default function UpgradePage() {
   return (
     <main className="min-h-screen bg-ink px-6 py-16 text-mist">
       <div className="mx-auto max-w-6xl">
-        <Suspense fallback={<div className="rounded-3xl border border-white/10 bg-white/[0.045] p-8 text-mist/65">Loading upgrade...</div>}>
+        <Suspense fallback={<div className="rounded-3xl border border-line bg-panel/80 p-8 text-mist/65">Loading upgrade...</div>}>
           <UpgradeFlow />
         </Suspense>
       </div>

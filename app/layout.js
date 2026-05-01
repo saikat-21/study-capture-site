@@ -66,6 +66,7 @@ const themeScript = `
     const useDark = resolvedTheme === "dark";
 
     root.classList.toggle("dark", useDark);
+    root.classList.toggle("light", !useDark);
     root.dataset.theme = resolvedTheme;
     root.dataset.themeMode = preference;
     root.style.colorScheme = resolvedTheme;
@@ -84,13 +85,13 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className="min-h-full bg-white text-neutral-900 dark:bg-neutral-950 dark:text-white"
+      className="light min-h-full bg-ink text-mist"
       suppressHydrationWarning
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="min-h-screen bg-white text-neutral-900 antialiased dark:bg-neutral-950 dark:text-white">
+      <body className="min-h-screen bg-ink text-mist antialiased">
         <AppLayout>{children}</AppLayout>
       </body>
     </html>

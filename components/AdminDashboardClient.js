@@ -108,13 +108,13 @@ export default function AdminDashboardClient() {
 
   return (
     <section className="mx-auto max-w-7xl">
-      <div className="flex flex-col gap-6 border-b border-white/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-6 border-b border-line pb-8 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="flex items-center gap-2 text-sm font-semibold text-mint">
             <ShieldCheck className="h-4 w-4" aria-hidden="true" />
             Production backend
           </p>
-          <h1 className="mt-3 text-4xl font-semibold text-white sm:text-5xl">
+          <h1 className="mt-3 text-4xl font-semibold text-mist sm:text-5xl">
             Study Capture Admin
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-mist/62">
@@ -126,7 +126,7 @@ export default function AdminDashboardClient() {
             type="button"
             onClick={() => loadDashboard().catch((err) => setError(err.message))}
             disabled={loading}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/12 px-5 text-sm font-semibold text-white transition hover:border-mint/50 hover:bg-white/[0.06] disabled:opacity-60"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-line px-5 text-sm font-semibold text-mist transition hover:border-mint/50 hover:bg-panel/75 disabled:opacity-60"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Activity className="h-4 w-4" aria-hidden="true" />}
             Refresh
@@ -148,7 +148,7 @@ export default function AdminDashboardClient() {
             onChange={(event) => setEmail(event.target.value)}
             required
             autoComplete="email"
-            className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 text-base text-white outline-none focus:border-mint/60"
+            className="h-14 w-full rounded-2xl border border-line bg-panel/80 px-4 py-4 text-base text-mist outline-none focus:border-mint/60"
             placeholder="admin@studycapture.co"
           />
         </AuthPanel>
@@ -172,7 +172,7 @@ export default function AdminDashboardClient() {
             onPaste={(event) => handleOtpPaste(event, setOtp)}
             required
             maxLength={OTP_MAX_LENGTH}
-            className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 text-base tracking-[0.22em] text-white outline-none focus:border-mint/60"
+            className="h-14 w-full rounded-2xl border border-line bg-panel/80 px-4 py-4 text-base tracking-[0.22em] text-mist outline-none focus:border-mint/60"
             placeholder="12345678"
             title="Enter the verification code from your email."
           />
@@ -214,19 +214,19 @@ function AuthPanel({ title, icon: Icon, onSubmit, loading, buttonText, children 
   return (
     <form
       onSubmit={onSubmit}
-      className="mt-8 max-w-xl rounded-3xl border border-white/10 bg-[#101A20] p-6 shadow-panel sm:p-8"
+      className="mt-8 max-w-xl rounded-3xl border border-line bg-panel p-6 shadow-panel sm:p-8"
     >
       <div className="mb-6 flex items-center gap-3">
         <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-mint/12 text-mint">
           <Icon className="h-5 w-5" aria-hidden="true" />
         </span>
-        <h2 className="text-2xl font-semibold text-white">{title}</h2>
+        <h2 className="text-2xl font-semibold text-mist">{title}</h2>
       </div>
       <div className="space-y-5">{children}</div>
       <button
         type="submit"
         disabled={loading}
-        className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-ink transition hover:bg-white disabled:opacity-65"
+        className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-strong transition hover:bg-panel disabled:opacity-65"
       >
         {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Check className="h-4 w-4" aria-hidden="true" />}
         {buttonText}
@@ -249,10 +249,10 @@ function MetricGrid({ metrics }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-7">
       {items.map((item) => (
-        <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.045] p-5">
+        <div key={item.label} className="rounded-2xl border border-line bg-panel/80 p-5">
           <item.icon className="h-5 w-5 text-mint" aria-hidden="true" />
           <p className="mt-4 text-sm text-mist/50">{item.label}</p>
-          <p className="mt-1 text-2xl font-semibold text-white">{item.value}</p>
+          <p className="mt-1 text-2xl font-semibold text-mist">{item.value}</p>
         </div>
       ))}
     </div>
@@ -261,21 +261,21 @@ function MetricGrid({ metrics }) {
 
 function LicenseUpdateForm({ value, onChange, onSubmit, loading }) {
   return (
-    <form onSubmit={onSubmit} className="rounded-3xl border border-white/10 bg-[#101A20] p-6 shadow-panel">
-      <h2 className="text-xl font-semibold text-white">Update license</h2>
+    <form onSubmit={onSubmit} className="rounded-3xl border border-line bg-panel p-6 shadow-panel">
+      <h2 className="text-xl font-semibold text-mist">Update license</h2>
       <div className="mt-5 space-y-4">
         <input
           type="email"
           value={value.email}
           onChange={(event) => onChange({ ...value, email: event.target.value })}
           required
-          className="w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-3 text-sm text-white outline-none focus:border-mint/60"
+          className="w-full rounded-2xl border border-line bg-panel/80 px-4 py-3 text-sm text-mist outline-none focus:border-mint/60"
           placeholder="customer@example.com"
         />
         <select
           value={value.state}
           onChange={(event) => onChange({ ...value, state: event.target.value })}
-          className="w-full rounded-2xl border border-white/10 bg-[#101A20] px-4 py-3 text-sm text-white outline-none focus:border-mint/60"
+          className="w-full rounded-2xl border border-line bg-panel px-4 py-3 text-sm text-mist outline-none focus:border-mint/60"
         >
           {LICENSE_STATES.map((state) => (
             <option key={state} value={state}>
@@ -289,20 +289,20 @@ function LicenseUpdateForm({ value, onChange, onSubmit, loading }) {
           max="20"
           value={value.maxDevices}
           onChange={(event) => onChange({ ...value, maxDevices: event.target.value })}
-          className="w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-3 text-sm text-white outline-none focus:border-mint/60"
+          className="w-full rounded-2xl border border-line bg-panel/80 px-4 py-3 text-sm text-mist outline-none focus:border-mint/60"
           placeholder="Max devices"
         />
         <textarea
           value={value.note}
           onChange={(event) => onChange({ ...value, note: event.target.value })}
-          className="min-h-24 w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-3 text-sm text-white outline-none focus:border-mint/60"
+          className="min-h-24 w-full rounded-2xl border border-line bg-panel/80 px-4 py-3 text-sm text-mist outline-none focus:border-mint/60"
           placeholder="Internal note"
         />
       </div>
       <button
         type="submit"
         disabled={loading}
-        className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-mint px-5 text-sm font-semibold text-ink transition hover:bg-white disabled:opacity-60"
+        className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-mint px-5 text-sm font-semibold text-strong transition hover:bg-panel disabled:opacity-60"
       >
         {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
         Save license
@@ -325,10 +325,10 @@ function RecentLicenses({ licenses }) {
               <th className="pb-3 font-medium">Updated</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/10">
+          <tbody className="divide-y divide-line">
             {licenses.map((license) => (
               <tr key={license.id}>
-                <td className="py-3 text-white">{license.email}</td>
+                <td className="py-3 text-mist">{license.email}</td>
                 <td className="py-3 text-mist/65">{license.license_ref || "-"}</td>
                 <td className="py-3 text-mint">{license.state}</td>
                 <td className="py-3 text-mist/65">{license.max_devices}</td>
@@ -347,10 +347,10 @@ function RecentPayments({ payments }) {
     <DataPanel title="Recent payments">
       <div className="space-y-3">
         {payments.map((payment) => (
-          <div key={payment.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+          <div key={payment.id} className="rounded-2xl border border-line bg-panel/70 p-4">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="font-semibold text-white">{payment.email}</p>
+                <p className="font-semibold text-mist">{payment.email}</p>
                 <p className="mt-1 text-xs text-mist/45">{payment.provider_order_id}</p>
               </div>
               <span className="rounded-full bg-mint/10 px-3 py-1 text-xs font-semibold text-mint">
@@ -372,10 +372,10 @@ function RecentSubscriptions({ subscriptions }) {
     <DataPanel title="Recent subscriptions">
       <div className="space-y-3">
         {subscriptions.map((subscription) => (
-          <div key={subscription.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+          <div key={subscription.id} className="rounded-2xl border border-line bg-panel/70 p-4">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="font-semibold text-white">{subscription.email}</p>
+                <p className="font-semibold text-mist">{subscription.email}</p>
                 <p className="mt-1 text-xs text-mist/45">{subscription.plan}</p>
               </div>
               <span className="rounded-full bg-mint/10 px-3 py-1 text-xs font-semibold text-mint">
@@ -399,13 +399,13 @@ function RecentDevices({ devices }) {
     <DataPanel title="Recent devices">
       <div className="space-y-3">
         {devices.map((device) => (
-          <div key={device.id} className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+          <div key={device.id} className="rounded-2xl border border-line bg-panel/70 p-4">
             <div className="flex items-start gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-mint">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-panel/70 text-mint">
                 <Monitor className="h-5 w-5" aria-hidden="true" />
               </span>
               <div>
-                <p className="font-semibold text-white">{device.browser_name || "Browser"} · {device.os || "Unknown OS"}</p>
+                <p className="font-semibold text-mist">{device.browser_name || "Browser"} · {device.os || "Unknown OS"}</p>
                 <p className="mt-1 text-sm text-mist/58">{device.licenses?.email || "Unknown email"}</p>
                 <p className="mt-1 text-xs text-mist/42">{formatDate(device.last_seen_at)}</p>
               </div>
@@ -420,15 +420,15 @@ function RecentDevices({ devices }) {
 
 function DataPanel({ title, children }) {
   return (
-    <section className="rounded-3xl border border-white/10 bg-[#101A20] p-6 shadow-panel">
-      <h2 className="text-xl font-semibold text-white">{title}</h2>
+    <section className="rounded-3xl border border-line bg-panel p-6 shadow-panel">
+      <h2 className="text-xl font-semibold text-mist">{title}</h2>
       <div className="mt-5">{children}</div>
     </section>
   );
 }
 
 function EmptyState() {
-  return <p className="rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-sm text-mist/50">No records yet.</p>;
+  return <p className="rounded-2xl border border-line bg-panel/70 p-4 text-sm text-mist/50">No records yet.</p>;
 }
 
 async function postJson(url, body, headers = {}) {

@@ -10,7 +10,11 @@ module.exports = {
       colors: {
         ink: "rgb(var(--color-ink) / <alpha-value>)",
         night: "rgb(var(--color-night) / <alpha-value>)",
+        panel: "rgb(var(--color-panel) / <alpha-value>)",
         mist: "rgb(var(--color-mist) / <alpha-value>)",
+        muted: "rgb(var(--color-muted) / <alpha-value>)",
+        strong: "rgb(var(--color-strong) / <alpha-value>)",
+        line: "var(--border-soft)",
         mint: "#5FE0B7",
         lagoon: "#50C8E8",
         amber: "#F8C66A",

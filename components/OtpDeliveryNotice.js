@@ -36,7 +36,7 @@ export default function OtpDeliveryNotice({ email, loading, onResend }) {
             <MailCheck className="h-4 w-4" aria-hidden="true" />
           </span>
           <div>
-            <p className="text-sm font-semibold text-white">Code sent to your email.</p>
+            <p className="text-sm font-semibold text-mist">Code sent to your email.</p>
             <p className="mt-1 text-sm leading-6 text-mist/68">
               Check Inbox or Spam/Junk folders if it {"doesn't"} arrive shortly.
             </p>
@@ -45,7 +45,7 @@ export default function OtpDeliveryNotice({ email, loading, onResend }) {
         </div>
 
         {secondsLeft > 0 ? (
-          <span className="inline-flex h-9 shrink-0 items-center justify-center rounded-full border border-white/10 px-3 text-xs font-semibold text-mist/58">
+          <span className="inline-flex h-9 shrink-0 items-center justify-center rounded-full border border-line px-3 text-xs font-semibold text-mist/58">
             Resend in {secondsLeft}s
           </span>
         ) : (

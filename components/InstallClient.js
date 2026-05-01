@@ -30,11 +30,11 @@ export default function InstallClient() {
 
   return (
     <section className="mx-auto max-w-5xl">
-      <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-7 shadow-panel sm:p-10">
+      <div className="rounded-3xl border border-line bg-panel/80 p-7 shadow-panel sm:p-10">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-mint/12 text-mint">
           {detected === "unknown" ? <Globe2 className="h-6 w-6" /> : <Compass className="h-6 w-6" />}
         </div>
-        <h1 className="mt-7 text-4xl font-semibold text-white">Install Study Capture</h1>
+        <h1 className="mt-7 text-4xl font-semibold text-mist">Install Study Capture</h1>
         <p className="mt-4 max-w-2xl text-base leading-8 text-mist/65">
           {detected === "unknown"
             ? "Choose your browser to continue."
@@ -46,16 +46,16 @@ export default function InstallClient() {
         {visibleBrowsers.map((browser) => {
           const href = storeUrls[browser.id];
           return (
-            <article key={browser.id} className="rounded-3xl border border-white/10 bg-[#101A20] p-6 shadow-panel">
-              <h2 className="text-2xl font-semibold text-white">{browser.label}</h2>
+            <article key={browser.id} className="rounded-3xl border border-line bg-panel p-6 shadow-panel">
+              <h2 className="text-2xl font-semibold text-mist">{browser.label}</h2>
               <p className="mt-2 text-sm text-mist/55">{browser.note}</p>
               <a
                 href={href || "#"}
                 aria-disabled={!href}
                 className={`mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition ${
                   href
-                    ? "bg-mint text-ink hover:-translate-y-0.5 hover:bg-white"
-                    : "cursor-not-allowed border border-white/10 text-mist/42"
+                    ? "bg-mint text-strong hover:-translate-y-0.5 hover:bg-panel"
+                    : "cursor-not-allowed border border-line text-mist/42"
                 }`}
               >
                 {href ? "Open install page" : "Store URL coming soon"}
@@ -71,7 +71,7 @@ export default function InstallClient() {
           <button
             type="button"
             onClick={() => setDetected("unknown")}
-            className="text-sm font-semibold text-mist/58 transition hover:text-white"
+            className="text-sm font-semibold text-mist/58 transition hover:text-mist"
           >
             Show all browser options
           </button>

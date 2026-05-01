@@ -102,9 +102,9 @@ export default function ManageLicenseClient() {
   return (
     <section className="mx-auto max-w-5xl">
       <div className="grid gap-7 lg:grid-cols-[0.82fr_1.18fr]">
-        <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-6 shadow-panel sm:p-8">
+        <div className="rounded-3xl border border-line bg-panel/80 p-6 shadow-panel sm:p-8">
           <p className="text-sm font-semibold text-mint">Manage License</p>
-          <h1 className="mt-4 text-4xl font-semibold text-white">Your Pro devices</h1>
+          <h1 className="mt-4 text-4xl font-semibold text-mist">Your Pro devices</h1>
           <p className="mt-5 text-base leading-8 text-mist/65">
             Sign in with an email verification code to review active browser/device activations and remove old ones.
           </p>
@@ -113,7 +113,7 @@ export default function ManageLicenseClient() {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-[#101A20] p-6 shadow-panel sm:p-8">
+        <div className="rounded-3xl border border-line bg-panel p-6 shadow-panel sm:p-8">
           {step === "email" ? (
             <form onSubmit={sendOtp} className="space-y-5">
               <label className="block text-sm font-medium text-mist/75" htmlFor="manage-email">
@@ -126,7 +126,7 @@ export default function ManageLicenseClient() {
                 onChange={(event) => setEmail(event.target.value)}
                 required
                 autoComplete="email"
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 text-base text-white outline-none focus:border-mint/60"
+                className="w-full rounded-2xl border border-line bg-panel/80 px-4 py-4 text-base text-mist outline-none focus:border-mint/60"
                 placeholder="you@example.com"
               />
               <ActionButton loading={loading}>Send code</ActionButton>
@@ -149,7 +149,7 @@ export default function ManageLicenseClient() {
                 onPaste={(event) => handleOtpPaste(event, setOtp)}
                 required
                 maxLength={OTP_MAX_LENGTH}
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 text-base tracking-[0.22em] text-white outline-none focus:border-mint/60"
+                className="w-full rounded-2xl border border-line bg-panel/80 px-4 py-4 text-base tracking-[0.22em] text-mist outline-none focus:border-mint/60"
                 placeholder="12345678"
                 title="Enter the verification code from your email."
               />
@@ -162,7 +162,7 @@ export default function ManageLicenseClient() {
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <p className="text-sm text-mist/50">Plan status</p>
-                  <h2 className="mt-1 text-2xl font-semibold text-white">
+                  <h2 className="mt-1 text-2xl font-semibold text-mist">
                     {status.plan === "pro" ? "Pro Lifetime" : "Free"}
                   </h2>
                   <p className="mt-1 text-sm text-mist/55">License state: {status.licenseState}</p>
@@ -175,14 +175,14 @@ export default function ManageLicenseClient() {
               <div className="mt-8 space-y-3">
                 {status.activeDevices.length ? (
                   status.activeDevices.map((device) => (
-                    <div key={device.id} className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
+                    <div key={device.id} className="rounded-2xl border border-line bg-panel/80 p-4">
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex gap-3">
-                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-mint">
+                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-panel/70 text-mint">
                             <Monitor className="h-5 w-5" aria-hidden="true" />
                           </span>
                           <div>
-                            <h3 className="font-semibold text-white">{device.browser_name || "Browser"}</h3>
+                            <h3 className="font-semibold text-mist">{device.browser_name || "Browser"}</h3>
                             <p className="mt-1 text-sm text-mist/55">{device.os || "Unknown OS"}</p>
                             <p className="mt-1 text-xs text-mist/40">
                               Last seen {formatDate(device.last_seen_at)}
@@ -202,14 +202,14 @@ export default function ManageLicenseClient() {
                     </div>
                   ))
                 ) : (
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-5 text-sm text-mist/60">
+                  <div className="rounded-2xl border border-line bg-panel/80 p-5 text-sm text-mist/60">
                     No active devices yet.
                   </div>
                 )}
               </div>
               {handoffStatus ? (
-                <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.045] p-4">
-                  <p className="text-sm font-semibold text-white">Extension activation</p>
+                <div className="mt-6 rounded-2xl border border-line bg-panel/80 p-4">
+                  <p className="text-sm font-semibold text-mist">Extension activation</p>
                   <p className={`mt-1 text-sm leading-6 ${handoffStatus.ok ? "text-mint" : "text-mist/62"}`}>
                     {handoffStatus.pending
                       ? "Activating Study Capture extension..."
@@ -249,7 +249,7 @@ function ActionButton({ loading, children }) {
     <button
       type="submit"
       disabled={loading}
-      className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-ink transition hover:bg-white disabled:opacity-65"
+      className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-strong transition hover:bg-panel disabled:opacity-65"
     >
       {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Check className="h-4 w-4" aria-hidden="true" />}
       {children}

@@ -96,7 +96,7 @@ export default function UpgradeFlow() {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
-      <section className="rounded-3xl border border-white/10 bg-white/[0.045] p-6 shadow-panel sm:p-8">
+      <section className="rounded-3xl border border-line bg-panel/80 p-6 shadow-panel sm:p-8">
         <p className="text-sm font-semibold text-mint">Study Capture Pro Lifetime</p>
         {pricing.test_mode ? (
           <div className="mt-5 rounded-2xl border border-mint/25 bg-mint/10 px-4 py-3 text-sm font-semibold text-mint">
@@ -108,7 +108,7 @@ export default function UpgradeFlow() {
           </div>
         )}
         <div className="mt-6 flex flex-wrap items-end gap-3">
-          <h1 className="text-5xl font-semibold text-white">₹{displayPrice}</h1>
+          <h1 className="text-5xl font-semibold text-mist">₹{displayPrice}</h1>
           {!pricing.test_mode ? (
             <span className="pb-2 text-2xl font-semibold text-mist/38 line-through">₹{originalPrice}</span>
           ) : null}
@@ -141,13 +141,13 @@ export default function UpgradeFlow() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-[#101A20] p-6 shadow-panel sm:p-8">
+      <section className="rounded-3xl border border-line bg-panel p-6 shadow-panel sm:p-8">
         <div className="mb-8 flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-mint/12 text-mint">
             <Mail className="h-5 w-5" aria-hidden="true" />
           </span>
           <div>
-            <h2 className="text-2xl font-semibold text-white">Start with your email</h2>
+            <h2 className="text-2xl font-semibold text-mist">Start with your email</h2>
             <p className="mt-1 text-sm text-mist/52">Email first, secure payment next.</p>
           </div>
         </div>
@@ -163,13 +163,13 @@ export default function UpgradeFlow() {
             onChange={(event) => setEmail(event.target.value)}
             required
             autoComplete="email"
-            className="h-14 w-full rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-4 text-base text-white outline-none transition placeholder:text-mist/30 focus:border-mint/60"
+            className="h-14 w-full rounded-2xl border border-line bg-panel/80 px-4 py-4 text-base text-mist outline-none transition placeholder:text-mist/30 focus:border-mint/60"
             placeholder="you@example.com"
           />
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-ink transition hover:-translate-y-0.5 hover:bg-white disabled:cursor-not-allowed disabled:opacity-65"
+            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-strong transition hover:-translate-y-0.5 hover:bg-panel disabled:cursor-not-allowed disabled:opacity-65"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
             Continue to checkout

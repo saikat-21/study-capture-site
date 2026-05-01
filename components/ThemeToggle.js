@@ -26,6 +26,7 @@ function applyTheme(mode) {
   const resolvedTheme = resolveTheme(mode);
 
   root.classList.toggle("dark", resolvedTheme === "dark");
+  root.classList.toggle("light", resolvedTheme === "light");
   root.dataset.theme = resolvedTheme;
   root.dataset.themeMode = mode;
   root.style.colorScheme = resolvedTheme;
@@ -63,7 +64,7 @@ export default function ThemeToggle() {
 
   return (
     <div className="flex items-center">
-      <div className="hidden rounded-full border border-white/10 bg-white/[0.045] p-1 text-xs font-semibold text-mist/64 sm:inline-flex">
+      <div className="hidden rounded-full border border-line bg-panel/70 p-1 text-xs font-semibold text-mist/64 shadow-panel sm:inline-flex">
         {MODES.map((themeMode) => (
           <button
             key={themeMode}
@@ -71,8 +72,8 @@ export default function ThemeToggle() {
             onClick={() => updateMode(themeMode)}
             className={`rounded-full px-3 py-1.5 capitalize transition ${
               mode === themeMode
-                ? "bg-mint text-ink shadow-glow"
-                : "hover:bg-white/[0.07] hover:text-white"
+                ? "bg-mint text-strong shadow-glow"
+                : "hover:bg-panel hover:text-mist"
             }`}
             aria-pressed={mode === themeMode}
           >
@@ -87,7 +88,7 @@ export default function ThemeToggle() {
         id="theme-select"
         value={mode}
         onChange={(event) => updateMode(event.target.value)}
-        className="h-9 rounded-full border border-white/10 bg-white/[0.045] px-3 text-xs font-semibold text-mist outline-none focus:border-mint/60 sm:hidden"
+        className="h-9 rounded-full border border-line bg-panel/80 px-3 text-xs font-semibold text-mist outline-none focus:border-mint/60 sm:hidden"
       >
         <option value="light">Light</option>
         <option value="dark">Dark</option>

@@ -77,19 +77,19 @@ export default function SuccessClient() {
   }, [handoffStatus?.ok, payment, searchParams]);
 
   return (
-    <section className="mx-auto max-w-3xl rounded-3xl border border-white/10 bg-[#101A20] p-7 shadow-panel sm:p-10">
+    <section className="mx-auto max-w-3xl rounded-3xl border border-line bg-panel p-7 shadow-panel sm:p-10">
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-mint/12 text-mint">
         <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
       </div>
-      <h1 className="mt-8 text-4xl font-semibold leading-tight text-white sm:text-5xl">
+      <h1 className="mt-8 text-4xl font-semibold leading-tight text-mist sm:text-5xl">
         Excellent choice — welcome to Study Capture Pro.
       </h1>
       <div className="mt-6 rounded-2xl border border-mint/20 bg-mint/10 p-5">
         <p className="text-sm text-mist/58">Pro active for</p>
-        <p className="mt-1 font-semibold text-white">{payment?.email || "your license email"}</p>
+        <p className="mt-1 font-semibold text-mist">{payment?.email || "your license email"}</p>
       </div>
-      <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.045] p-5">
-        <h2 className="font-semibold text-white">Next steps</h2>
+      <div className="mt-8 rounded-2xl border border-line bg-panel/80 p-5">
+        <h2 className="font-semibold text-mist">Next steps</h2>
         <ol className="mt-4 space-y-3 text-sm leading-6 text-mist/70">
           {payment?.source === "extension" ? (
             <>
@@ -108,8 +108,8 @@ export default function SuccessClient() {
         </ol>
       </div>
       {payment?.source === "extension" || handoffStatus ? (
-        <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.045] p-5">
-          <h2 className="font-semibold text-white">Extension activation</h2>
+        <div className="mt-6 rounded-2xl border border-line bg-panel/80 p-5">
+          <h2 className="font-semibold text-mist">Extension activation</h2>
           <p className={`mt-2 text-sm leading-6 ${handoffStatus?.ok ? "text-mint" : "text-mist/68"}`}>
             {handoffStatus?.pending
               ? "Activating Study Capture extension..."
@@ -122,14 +122,14 @@ export default function SuccessClient() {
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
         <Link
           href="/install"
-          className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-ink transition hover:-translate-y-0.5 hover:bg-white"
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-strong transition hover:-translate-y-0.5 hover:bg-panel"
         >
           Install extension
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
         <a
           href={contactMailto}
-          className="inline-flex h-12 items-center justify-center rounded-full border border-white/12 px-6 text-sm font-semibold text-white transition hover:border-mint/50 hover:bg-white/[0.06]"
+          className="inline-flex h-12 items-center justify-center rounded-full border border-line px-6 text-sm font-semibold text-mist transition hover:border-mint/50 hover:bg-panel/75"
         >
           Contact support
         </a>

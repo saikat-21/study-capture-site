@@ -211,7 +211,7 @@ export default function CheckoutClient() {
 
   return (
     <section className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[0.85fr_1.15fr]">
-      <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-6 shadow-panel sm:p-8">
+      <div className="rounded-3xl border border-line bg-panel/80 p-6 shadow-panel sm:p-8">
         <p className="text-sm font-semibold text-mint">Checkout</p>
         {pricing.test_mode ? (
           <div className="mt-5 rounded-2xl border border-mint/25 bg-mint/10 px-4 py-3 text-sm font-semibold text-mint">
@@ -222,9 +222,9 @@ export default function CheckoutClient() {
             Introductory offer
           </div>
         )}
-        <h1 className="mt-4 text-4xl font-semibold text-white">Study Capture Pro Lifetime</h1>
+        <h1 className="mt-4 text-4xl font-semibold text-mist">Study Capture Pro Lifetime</h1>
         <div className="mt-7 flex flex-wrap items-end gap-3">
-          <span className="text-5xl font-semibold text-white">₹{displayPrice}</span>
+          <span className="text-5xl font-semibold text-mist">₹{displayPrice}</span>
           {!pricing.test_mode ? (
             <span className="pb-2 text-2xl font-semibold text-mist/38 line-through">₹{originalPrice}</span>
           ) : null}
@@ -241,7 +241,7 @@ export default function CheckoutClient() {
           <div className="flex gap-3">
             <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-mint" aria-hidden="true" />
             <div>
-              <p className="font-semibold text-white">License email</p>
+              <p className="font-semibold text-mist">License email</p>
               <p className="mt-1 text-sm text-mist/65">{email || "No email found."}</p>
             </div>
           </div>
@@ -249,22 +249,22 @@ export default function CheckoutClient() {
         {!canPay ? (
           <Link
             href={buildUpgradeReturnHref({ source, reason, extensionId: handoff.extensionId, testMode, testToken })}
-            className="mt-6 inline-flex text-sm font-semibold text-mint transition hover:text-white"
+            className="mt-6 inline-flex text-sm font-semibold text-mint transition hover:text-mist"
           >
             Enter email on upgrade page
           </Link>
         ) : null}
       </div>
 
-      <div className="rounded-3xl border border-white/10 bg-[#101A20] p-6 shadow-panel sm:p-8">
+      <div className="rounded-3xl border border-line bg-panel p-6 shadow-panel sm:p-8">
         <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-mint/12 text-mint">
           <Lock className="h-6 w-6" aria-hidden="true" />
         </div>
-        <h2 className="mt-7 text-3xl font-semibold text-white">Pay securely with Razorpay</h2>
+        <h2 className="mt-7 text-3xl font-semibold text-mist">Pay securely with Razorpay</h2>
         <p className="mt-4 max-w-xl text-base leading-8 text-mist/65">
           Razorpay Checkout supports UPI, credit card, debit card, and netbanking. Your payment order is created on the server and verified after checkout.
         </p>
-        <div className="mt-5 flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.045] p-4 text-sm leading-6 text-mist/70">
+        <div className="mt-5 flex items-start gap-3 rounded-2xl border border-line bg-panel/80 p-4 text-sm leading-6 text-mist/70">
           <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-mint" aria-hidden="true" />
           <span>Secure payment powered by Razorpay. Your license will be linked to this email.</span>
         </div>
@@ -273,7 +273,7 @@ export default function CheckoutClient() {
           type="button"
           onClick={startPayment}
           disabled={!canStartPayment || loading}
-          className="mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-ink transition hover:-translate-y-0.5 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+          className="mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-strong transition hover:-translate-y-0.5 hover:bg-panel disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
           {pricingLoading ? "Preparing secure checkout" : `Pay ₹${displayPrice} securely`}
