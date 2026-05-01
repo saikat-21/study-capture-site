@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, Loader2, Monitor, Trash2 } from "lucide-react";
 import {
   getExtensionHandoff,
@@ -19,12 +19,37 @@ export default function ManageLicenseClient() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [cooldownUntil, setCooldownUntil] = useState(null);
+  const [now, setNow] = useState(Date.now());
+  const cooldownSeconds = cooldownUntil
+    ? Math.max(0, Math.ceil((cooldownUntil - now) / 1000))
+    : 0;
+
+  useEffect(() => {
+    if (!cooldownUntil) return undefined;
+    const timer = window.setInterval(() => {
+      const current = Date.now();
+      setNow(current);
+      if (current >= cooldownUntil) {
+        setCooldownUntil(null);
+      }
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [cooldownUntil]);
 
   async function sendOtp(event) {
     event?.preventDefault();
+    if (loading) return false;
+    if (cooldownSeconds > 0) {
+      setError(rateLimitMessage(cooldownSeconds));
+      return false;
+    }
+
     return run(async () => {
       await postJson("/api/auth/send-otp", { email });
       setOtp("");
+      setCooldownUntil(null);
       setStep("otp");
     });
   }
@@ -67,7 +92,7 @@ export default function ManageLicenseClient() {
     });
     setHandoffStatus(result);
     if (result.ok) {
-      setMessage("Study Capture Pro is active in your extension.");
+      setMessage("Device activated. Study Capture Pro is active in your extension.");
     }
   }
 
@@ -93,6 +118,7 @@ export default function ManageLicenseClient() {
       return true;
     } catch (err) {
       setError(err.message);
+      applyCooldownFromError(err, setCooldownUntil);
       return false;
     } finally {
       setLoading(false);
@@ -129,13 +155,20 @@ export default function ManageLicenseClient() {
                 className="w-full rounded-2xl border border-line bg-panel/80 px-4 py-4 text-base text-mist outline-none focus:border-mint/60"
                 placeholder="you@example.com"
               />
-              <ActionButton loading={loading}>Send code</ActionButton>
+              <ActionButton loading={loading} disabled={cooldownSeconds > 0}>
+                {cooldownSeconds > 0 ? `Try again in ${formatCooldown(cooldownSeconds)}` : "Send code"}
+              </ActionButton>
             </form>
           ) : null}
 
           {step === "otp" ? (
             <form onSubmit={verifyOtp} className="space-y-5">
-              <OtpDeliveryNotice email={email} loading={loading} onResend={sendOtp} />
+              <OtpDeliveryNotice
+                email={email}
+                loading={loading}
+                onResend={sendOtp}
+                cooldownSeconds={cooldownSeconds}
+              />
               <label className="block text-sm font-medium text-mist/75" htmlFor="manage-otp">
                 Verification code
               </label>
@@ -214,7 +247,7 @@ export default function ManageLicenseClient() {
                     {handoffStatus.pending
                       ? "Activating Study Capture extension..."
                       : handoffStatus.ok
-                        ? "Study Capture Pro is active in your extension."
+                        ? "Device activated."
                         : handoffStatus.message ||
                           "Activation failed to connect to extension. Please reopen extension and try again."}
                   </p>
@@ -241,16 +274,61 @@ async function postJson(url, body, headers = {}) {
     body: JSON.stringify(body)
   });
   const result = await response.json();
-  if (!response.ok) throw new Error(result.message || "Request failed.");
+  if (!response.ok) throw new ApiError(result.message || "Request failed.", {
+    status: response.status,
+    code: result.code,
+    details: result.details
+  });
   return result;
 }
 
-function ActionButton({ loading, children }) {
+class ApiError extends Error {
+  constructor(message, { status, code, details } = {}) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+    this.details = details;
+  }
+}
+
+function applyCooldownFromError(error, setCooldownUntil) {
+  if (error?.code !== "rate_limited") return;
+
+  const retryAfterSeconds = Number(error.details?.retryAfterSeconds);
+  const resetAtMs = error.details?.resetAt ? Date.parse(error.details.resetAt) : NaN;
+
+  if (Number.isFinite(resetAtMs)) {
+    setCooldownUntil(resetAtMs);
+    return;
+  }
+
+  if (Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0) {
+    setCooldownUntil(Date.now() + retryAfterSeconds * 1000);
+  }
+}
+
+function rateLimitMessage(seconds) {
+  return `Too many attempts. Please try again in ${formatCooldownLong(seconds)}.`;
+}
+
+function formatCooldown(seconds) {
+  if (seconds < 60) return `${seconds}s`;
+  return `${Math.ceil(seconds / 60)}m`;
+}
+
+function formatCooldownLong(seconds) {
+  if (seconds < 60) return `${seconds} second${seconds === 1 ? "" : "s"}`;
+  const minutes = Math.ceil(seconds / 60);
+  return `${minutes} minute${minutes === 1 ? "" : "s"}`;
+}
+
+function ActionButton({ loading, disabled = false, children }) {
   return (
     <button
       type="submit"
-      disabled={loading}
-      className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-strong transition hover:bg-panel disabled:opacity-65"
+      disabled={loading || disabled}
+      className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-strong transition hover:bg-panel disabled:cursor-not-allowed disabled:opacity-65"
     >
       {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Check className="h-4 w-4" aria-hidden="true" />}
       {children}

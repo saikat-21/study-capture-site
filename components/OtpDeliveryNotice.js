@@ -5,8 +5,9 @@ import { Loader2, MailCheck, RotateCw } from "lucide-react";
 
 const RESEND_DELAY_SECONDS = 30;
 
-export default function OtpDeliveryNotice({ email, loading, onResend }) {
+export default function OtpDeliveryNotice({ email, loading, onResend, cooldownSeconds = 0 }) {
   const [secondsLeft, setSecondsLeft] = useState(RESEND_DELAY_SECONDS);
+  const effectiveSecondsLeft = Math.max(secondsLeft, cooldownSeconds);
 
   useEffect(() => {
     setSecondsLeft(RESEND_DELAY_SECONDS);
@@ -23,7 +24,7 @@ export default function OtpDeliveryNotice({ email, loading, onResend }) {
   }, [secondsLeft]);
 
   async function resendCode() {
-    if (loading || secondsLeft > 0) return;
+    if (loading || effectiveSecondsLeft > 0) return;
     const sent = await onResend();
     if (sent) setSecondsLeft(RESEND_DELAY_SECONDS);
   }
@@ -44,9 +45,9 @@ export default function OtpDeliveryNotice({ email, loading, onResend }) {
           </div>
         </div>
 
-        {secondsLeft > 0 ? (
+        {effectiveSecondsLeft > 0 ? (
           <span className="inline-flex h-9 shrink-0 items-center justify-center rounded-full border border-line px-3 text-xs font-semibold text-mist/58">
-            Resend in {secondsLeft}s
+            {cooldownSeconds > 0 ? `Try again in ${formatCooldown(cooldownSeconds)}` : `Resend in ${secondsLeft}s`}
           </span>
         ) : (
           <button
@@ -62,4 +63,10 @@ export default function OtpDeliveryNotice({ email, loading, onResend }) {
       </div>
     </div>
   );
+}
+
+function formatCooldown(seconds) {
+  if (seconds < 60) return `${seconds}s`;
+  const minutes = Math.ceil(seconds / 60);
+  return `${minutes}m`;
 }
