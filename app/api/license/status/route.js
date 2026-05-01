@@ -16,10 +16,15 @@ import {
   licensePlanForState,
   listActiveDevices
 } from "../../../../lib/server/licenses";
+import { corsPreflight, withCors } from "../../../../lib/server/cors";
 import { createSupabaseServiceClient } from "../../../../lib/server/supabase";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+export async function OPTIONS(request) {
+  return corsPreflight(request);
+}
 
 export async function GET(request) {
   try {
@@ -27,7 +32,7 @@ export async function GET(request) {
     const signedPayload = bearerToken ? verifySignedTokenOrNull(bearerToken) : null;
 
     if (signedPayload) {
-      return ok(await getSignedLicenseStatus(signedPayload, bearerToken));
+      return withCors(request, ok(await getSignedLicenseStatus(signedPayload, bearerToken)));
     }
 
     const auth = await getAuthenticatedUser(request);
@@ -69,7 +74,7 @@ export async function GET(request) {
         })
       : null;
 
-    return ok({
+    return withCors(request, ok({
       email: auth.email,
       plan,
       licenseState: license?.state || "free",
@@ -83,9 +88,9 @@ export async function GET(request) {
       activeDeviceCount: activeDevices.length,
       deviceStatus,
       activeDevices
-    });
+    }));
   } catch (error) {
-    return fail(error);
+    return withCors(request, fail(error));
   }
 }
 

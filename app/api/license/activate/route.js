@@ -1,8 +1,10 @@
 import {
   activateDeviceForLicense,
   getLicenseByEmail,
+  listActiveDevicesForLicense,
   getSubscriptionByEmail
 } from "../../../../lib/db";
+import { corsPreflight, withCors } from "../../../../lib/server/cors";
 import { fail, HttpError, ok, readJson } from "../../../../lib/server/errors";
 import {
   hashDeviceId,
@@ -21,11 +23,19 @@ export const dynamic = "force-dynamic";
 
 const PAID_STATE = "paid_lifetime";
 
+export async function OPTIONS(request) {
+  return corsPreflight(request);
+}
+
 export async function POST(request) {
   let email;
+  let extId;
+  let deviceId;
+  let deviceIdHash;
   let rateLimitContext;
 
   try {
+    const url = new URL(request.url);
     const body = await readJson(request);
     const activationGrant = normalizeOptionalString(
       body.activationGrant || body.activation_grant || body.grant,
@@ -53,7 +63,14 @@ export async function POST(request) {
       );
     }
     const legacyLicenseRef = normalizeOptionalLicenseRef(body.licenseRef || body.license_ref);
-    const deviceId = normalizeRequiredString(body.deviceId, "deviceId", 256);
+    deviceId = normalizeRequiredString(
+      body.deviceId || body.device_id || body.deviceID,
+      "deviceId",
+      256
+    );
+    extId =
+      normalizeOptionalString(body.extId || body.extensionId || url.searchParams.get("extId"), 160) ||
+      null;
     const browserName =
       normalizeOptionalString(body.browserName, 80) ||
       normalizeOptionalString(body.browser, 80) ||
@@ -65,6 +82,18 @@ export async function POST(request) {
 
     const license = await getLicenseByEmail(email);
     const subscription = await getSubscriptionByEmail(email);
+    const activeDevices = license ? await listActiveDevicesForLicense(license) : [];
+
+    console.log("Study Capture license activation lookup.", {
+      email,
+      extId,
+      licenseFound: Boolean(license),
+      licenseId: license?.id || null,
+      licenseState: license?.state || null,
+      maxDevices: license?.max_devices || null,
+      subscriptionStatus: subscription?.status || null,
+      activeDeviceCount: activeDevices.length
+    });
 
     if (
       !license ||
@@ -94,13 +123,36 @@ export async function POST(request) {
       );
     }
 
-    const deviceIdHash = hashDeviceId(deviceId);
+    deviceIdHash = hashDeviceId(deviceId);
+    console.log("Study Capture license activation device context.", {
+      email,
+      extId,
+      deviceId,
+      deviceIdHash,
+      browserName,
+      os,
+      extensionVersion
+    });
+
     const activation = await activateDeviceForLicense({
       license,
       deviceIdHash,
       browserName,
       os,
       extensionVersion
+    });
+
+    console.log("Study Capture license activation device DB result.", {
+      email,
+      extId,
+      operation: activation.operation || null,
+      deviceLimitReached: Boolean(activation.deviceLimitReached),
+      maxDevices: activation.maxDevices,
+      activeDeviceCountBeforeInsert: activation.activeDeviceCount ?? activeDevices.length,
+      deviceRecordId: activation.device?.id || null,
+      browserName: activation.device?.browser_name || null,
+      os: activation.device?.os || null,
+      lastSeenAt: activation.device?.last_seen_at || null
     });
 
     if (activation.deviceLimitReached) {
@@ -120,6 +172,14 @@ export async function POST(request) {
       maxDevices: activation.maxDevices
     });
 
+    console.log("Study Capture license activation token generated.", {
+      email,
+      extId,
+      licenseId: license.id || license.license_ref || null,
+      deviceRecordId: activation.device?.id || null,
+      tokenExpiresAt: signedLicense.payload.tokenExpiresAt
+    });
+
     await maybeRecordActivationEvent({
       rateLimitContext,
       request,
@@ -135,20 +195,29 @@ export async function POST(request) {
       }
     });
 
-    return ok({
+    return withCors(request, ok({
       message: "Study Capture Pro activated on this device.",
       email,
       plan: "pro",
       licenseState: license.state,
       subscriptionStatus: subscription?.status || "active",
       maxDevices: activation.maxDevices,
+      activeDeviceCount: activeDeviceCountAfterActivation(activeDevices.length, activation),
       device: activation.device,
       accessToken: signedLicense.token,
       token: signedLicense.token,
       tokenExpiresAt: signedLicense.payload.tokenExpiresAt,
       licenseToken: signedLicense
-    });
+    }));
   } catch (error) {
+    console.error("Study Capture license activation failed.", {
+      email: email || null,
+      extId: extId || null,
+      deviceId: deviceId || null,
+      deviceIdHash: deviceIdHash || null,
+      code: error?.code || null,
+      message: error?.message || String(error)
+    });
     await maybeRecordActivationEvent({
       rateLimitContext,
       request,
@@ -156,8 +225,16 @@ export async function POST(request) {
       success: false,
       metadata: { reason: error.code || error.message }
     });
-    return fail(error);
+    return withCors(request, fail(error));
   }
+}
+
+function activeDeviceCountAfterActivation(currentCount, activation) {
+  if (activation.operation === "insert_new_device" || activation.operation === "reactivate_existing_device") {
+    return currentCount + 1;
+  }
+
+  return currentCount;
 }
 
 function normalizeOptionalLicenseRef(value) {
