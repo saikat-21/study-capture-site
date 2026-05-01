@@ -215,7 +215,8 @@ export default function ManageLicenseClient() {
                       ? "Activating Study Capture extension..."
                       : handoffStatus.ok
                         ? "Study Capture Pro is active in your extension."
-                        : handoffStatus.message || "Open Study Capture and click Activate Pro again."}
+                        : handoffStatus.message ||
+                          "Activation failed to connect to extension. Please reopen extension and try again."}
                   </p>
                 </div>
               ) : null}
