@@ -73,7 +73,7 @@ export default function ThemeToggle() {
             className={`rounded-full px-3 py-1.5 capitalize transition ${
               mode === themeMode
                 ? "bg-mint text-strong shadow-glow"
-                : "hover:bg-panel hover:text-mist"
+                : "hover:bg-mint/10 hover:text-mist"
             }`}
             aria-pressed={mode === themeMode}
           >

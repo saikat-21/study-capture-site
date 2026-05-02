@@ -40,7 +40,7 @@ function ContactLink({ label, email, href }) {
   return (
     <a
       href={href}
-      className="inline-flex min-h-12 items-center justify-between gap-4 rounded-2xl border border-line bg-panel/80 px-4 py-3 text-sm transition hover:border-mint/40 hover:bg-panel/85"
+      className="inline-flex min-h-12 items-center justify-between gap-4 rounded-2xl border border-line bg-panel/80 px-4 py-3 text-sm transition hover:border-mint/40 hover:bg-mint/10"
     >
       <span>
         <span className="block font-semibold text-mist">{label}</span>

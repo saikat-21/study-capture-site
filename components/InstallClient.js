@@ -54,7 +54,7 @@ export default function InstallClient() {
                 aria-disabled={!href}
                 className={`mt-7 inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition ${
                   href
-                    ? "bg-mint text-strong hover:-translate-y-0.5 hover:bg-panel"
+                    ? "bg-mint text-strong hover:-translate-y-0.5 hover:bg-mint/85"
                     : "cursor-not-allowed border border-line text-mist/42"
                 }`}
               >

@@ -122,14 +122,14 @@ export default function SuccessClient() {
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
         <Link
           href="/install"
-          className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-strong transition hover:-translate-y-0.5 hover:bg-panel"
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-strong transition hover:-translate-y-0.5 hover:bg-mint/85"
         >
           Install extension
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
         <a
           href={contactMailto}
-          className="inline-flex h-12 items-center justify-center rounded-full border border-line px-6 text-sm font-semibold text-mist transition hover:border-mint/50 hover:bg-panel/75"
+          className="inline-flex h-12 items-center justify-center rounded-full border border-line px-6 text-sm font-semibold text-mist transition hover:border-mint/50 hover:bg-mint/10"
         >
           Contact support
         </a>

@@ -273,7 +273,7 @@ export default function CheckoutClient() {
           type="button"
           onClick={startPayment}
           disabled={!canStartPayment || loading}
-          className="mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-strong transition hover:-translate-y-0.5 hover:bg-panel disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+          className="mt-8 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-strong transition hover:-translate-y-0.5 hover:bg-mint/85 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
           {pricingLoading ? "Preparing secure checkout" : `Pay ₹${displayPrice} securely`}

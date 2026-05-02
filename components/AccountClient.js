@@ -88,7 +88,7 @@ export default function AccountClient() {
             type="button"
             onClick={refreshAccount}
             disabled={loading}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-line px-5 text-sm font-semibold text-mist transition hover:border-mint/50 hover:bg-panel/75 disabled:opacity-60"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-line px-5 text-sm font-semibold text-mist transition hover:border-mint/50 hover:bg-mint/10 disabled:opacity-60"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <ShieldCheck className="h-4 w-4" aria-hidden="true" />}
             Refresh
@@ -149,14 +149,14 @@ export default function AccountClient() {
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <Link
                 href="/upgrade"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-mint px-5 text-sm font-semibold text-strong transition hover:bg-panel"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-mint px-5 text-sm font-semibold text-strong transition hover:bg-mint/85"
               >
                 Upgrade Pro
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
               <Link
                 href="/manage-license"
-                className="inline-flex h-11 items-center justify-center rounded-full border border-line px-5 text-sm font-semibold text-mist transition hover:border-mint/50 hover:bg-panel/75"
+                className="inline-flex h-11 items-center justify-center rounded-full border border-line px-5 text-sm font-semibold text-mist transition hover:border-mint/50 hover:bg-mint/10"
               >
                 Manage devices
               </Link>
@@ -228,7 +228,7 @@ function AuthCard({ title, icon: Icon, onSubmit, loading, buttonText, children }
       <button
         type="submit"
         disabled={loading}
-        className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-strong transition hover:bg-panel disabled:opacity-65"
+        className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-strong transition hover:bg-mint/85 disabled:opacity-65"
       >
         {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Check className="h-4 w-4" aria-hidden="true" />}
         {buttonText}
