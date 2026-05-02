@@ -254,7 +254,7 @@ function HeroProductMockup() {
               <div className="rounded-xl bg-white px-4 py-3 text-center text-sm font-semibold text-slate-600 shadow-sm">
                 Save PNG
               </div>
-              <div className="rounded-xl bg-violet-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-[0_14px_28px_rgba(124,58,237,0.24)]">
+              <div className="rounded-xl bg-gradient-to-r from-violet-600 to-violet-700 px-4 py-3 text-center text-sm font-semibold text-white shadow-[0_16px_32px_rgba(124,58,237,0.32)] ring-1 ring-violet-500/25">
                 Save PDF
               </div>
             </div>
