@@ -5,14 +5,18 @@ import {
   BookOpen,
   Check,
   Chrome,
+  CreditCard,
   Crown,
+  EyeOff,
   FileText,
   Layers3,
   MonitorDown,
+  MousePointer2,
   PanelTop,
+  ShieldCheck,
   Sparkles
 } from "lucide-react";
-import { installUrl, proUrl } from "../lib/site";
+import { installUrl, proUrl, supportMailto } from "../lib/site";
 
 const features = [
   {
@@ -43,6 +47,14 @@ const features = [
 ];
 
 const browserSupport = ["Chrome", "Edge", "Firefox", "Safari"];
+
+const permissionTrustBullets = [
+  "Local-first capture",
+  "User-controlled exports",
+  "No selling of data",
+  "Secure payment handling",
+  "Clear privacy policy"
+];
 
 const faqs = [
   {
@@ -97,6 +109,7 @@ export default function Home() {
   return (
     <main className="min-h-screen overflow-hidden bg-ink text-mist">
       <HeroSection />
+      <TrustPermissionsSection />
       <FeatureSection />
       <BrowserSupportSection />
       <PricingSection />
@@ -252,6 +265,88 @@ function HeroProductMockup() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function TrustPermissionsSection() {
+  return (
+    <section className="border-y border-line bg-night/80 py-16 sm:py-20">
+      <div className="section-shell grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+        <div>
+          <p className="inline-flex items-center gap-2 rounded-full border border-mint/20 bg-mint/10 px-3 py-1 text-sm font-semibold text-mint">
+            <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+            Permissions and trust
+          </p>
+          <h2 className="mt-6 max-w-2xl text-3xl font-semibold leading-tight text-mist sm:text-4xl">
+            Why Study Capture needs browser access
+          </h2>
+          <p className="mt-5 max-w-2xl text-base leading-8 text-mist/70">
+            Study Capture needs access to the current webpage so it can capture visible content and create PNG, PDF, or Study Book exports. Captures happen only when you click capture or export.
+          </p>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-mist/62">
+            Page content is processed locally in the browser where possible. We do not sell personal data, track browsing history for advertising, or read pages in the background.
+          </p>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-mist/62">
+            Email is used only for Pro license delivery, restore access, support, and payment confirmation. Payments are handled by Razorpay or trusted payment processors.
+          </p>
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/privacy"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-mint px-5 text-sm font-semibold text-strong transition hover:-translate-y-0.5 hover:bg-mint/85"
+            >
+              Privacy Policy
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+            <a
+              href={supportMailto}
+              className="inline-flex h-11 items-center justify-center rounded-full border border-line px-5 text-sm font-semibold text-mist transition hover:-translate-y-0.5 hover:border-mint/50 hover:bg-mint/10"
+            >
+              Contact Support
+            </a>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <TrustCard
+            icon={<MousePointer2 className="h-5 w-5" aria-hidden="true" />}
+            title="Only when you ask"
+            text="Study Capture captures the current page after a user action. It does not read pages in the background."
+          />
+          <TrustCard
+            icon={<EyeOff className="h-5 w-5" aria-hidden="true" />}
+            title="No ad tracking"
+            text="We do not track browsing history for advertising or sell personal data."
+          />
+          <TrustCard
+            icon={<CreditCard className="h-5 w-5" aria-hidden="true" />}
+            title="Payments stay secure"
+            text="Pro payments are handled by Razorpay or trusted payment processors."
+          />
+          <div className="rounded-3xl border border-mint/20 bg-mint/10 p-5">
+            <ul className="grid gap-3 text-sm font-semibold leading-6 text-mist/76">
+              {permissionTrustBullets.map((item) => (
+                <li key={item} className="flex gap-3">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-mint" aria-hidden="true" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TrustCard({ icon, title, text }) {
+  return (
+    <div className="rounded-3xl border border-line bg-panel/80 p-5 shadow-panel">
+      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-mint/12 text-mint">
+        {icon}
+      </div>
+      <h3 className="mt-5 text-base font-semibold text-mist">{title}</h3>
+      <p className="mt-3 text-sm leading-7 text-mist/62">{text}</p>
     </div>
   );
 }

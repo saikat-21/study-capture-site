@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CheckCircle2, CreditCard, Download, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
+import { CheckCircle2, CreditCard, Download, EyeOff, LockKeyhole, Mail, MousePointer2, ShieldCheck } from "lucide-react";
 import { supportEmail, supportMailto } from "../../lib/site";
 
 const lastUpdated = "April 28, 2026";
@@ -9,6 +9,14 @@ const trustBadges = [
   "Local-first processing",
   "Secure payments",
   "User-controlled exports"
+];
+
+const permissionTrustBullets = [
+  "Local-first capture",
+  "User-controlled exports",
+  "No selling of data",
+  "Secure payment handling",
+  "Clear privacy policy"
 ];
 
 const policySections = [
@@ -143,6 +151,71 @@ export default function PrivacyPage() {
           />
         </section>
 
+        <section className="mt-12 rounded-3xl border border-line bg-panel/75 p-6 shadow-panel sm:p-8">
+          <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+            <div>
+              <p className="inline-flex items-center gap-2 rounded-full border border-mint/20 bg-mint/10 px-3 py-1 text-sm font-semibold text-mint">
+                <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                Extension permissions
+              </p>
+              <h2 className="mt-5 text-3xl font-semibold leading-tight text-mist">
+                Why Study Capture needs browser access
+              </h2>
+              <p className="mt-5 text-base leading-8 text-mist/70">
+                Study Capture needs access to the current webpage so it can capture visible content and create PNG, PDF, or Study Book exports.
+              </p>
+              <p className="mt-4 text-sm leading-7 text-mist/62">
+                Page content is processed locally in the browser where possible. Captures happen only when you click capture or export.
+              </p>
+              <p className="mt-4 text-sm leading-7 text-mist/62">
+                We do not sell personal data, read pages in the background, or track browsing history for advertising. Email is used only for Pro license delivery, restore access, support, and payment confirmation.
+              </p>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/privacy"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-mint px-5 text-sm font-semibold text-strong transition hover:-translate-y-0.5 hover:bg-mint/85"
+                >
+                  Privacy Policy
+                </Link>
+                <a
+                  href={supportMailto}
+                  className="inline-flex h-11 items-center justify-center rounded-full border border-line px-5 text-sm font-semibold text-mist transition hover:-translate-y-0.5 hover:border-mint/50 hover:bg-mint/10"
+                >
+                  Contact Support
+                </a>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <PermissionPoint
+                icon={<MousePointer2 className="h-5 w-5" aria-hidden="true" />}
+                title="User controlled"
+                text="Exports start from an explicit click, not background browsing."
+              />
+              <PermissionPoint
+                icon={<EyeOff className="h-5 w-5" aria-hidden="true" />}
+                title="No ad tracking"
+                text="We do not sell data or track browsing history for advertising."
+              />
+              <PermissionPoint
+                icon={<CreditCard className="h-5 w-5" aria-hidden="true" />}
+                title="Payment processors"
+                text="Payments are handled by Razorpay or trusted payment processors."
+              />
+              <div className="rounded-3xl border border-mint/20 bg-mint/10 p-5">
+                <ul className="grid gap-3 text-sm font-semibold leading-6 text-mist/76">
+                  {permissionTrustBullets.map((item) => (
+                    <li key={item} className="flex gap-3">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-mint" aria-hidden="true" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="mt-12 space-y-4">
           {policySections.map((section) => (
             <PolicySection key={section.title} section={section} />
@@ -183,6 +256,18 @@ export default function PrivacyPage() {
         </footer>
       </article>
     </main>
+  );
+}
+
+function PermissionPoint({ icon, title, text }) {
+  return (
+    <div className="rounded-3xl border border-line bg-ink/35 p-5">
+      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-mint/12 text-mint">
+        {icon}
+      </div>
+      <h3 className="mt-5 text-base font-semibold text-mist">{title}</h3>
+      <p className="mt-3 text-sm leading-7 text-mist/62">{text}</p>
+    </div>
   );
 }
 
