@@ -174,67 +174,82 @@ function HeroScene() {
 function HeroProductMockup() {
   return (
     <div className="absolute inset-0 flex items-center justify-center lg:justify-end">
-      <div className="relative h-[390px] w-full max-w-[620px] sm:h-[470px] lg:h-[540px]">
-        <div className="absolute left-5 top-8 h-[76%] w-[78%] rounded-[28px] border border-line bg-panel/75 p-4 shadow-panel backdrop-blur-md sm:p-5">
-          <div className="flex items-center gap-2 border-b border-line pb-4">
-            <span className="h-3 w-3 rounded-full bg-coral" />
-            <span className="h-3 w-3 rounded-full bg-amber" />
-            <span className="h-3 w-3 rounded-full bg-mint" />
-            <span className="ml-3 h-7 flex-1 rounded-full bg-panel/70" />
+      <div className="relative w-full max-w-[560px]">
+        <div className="absolute -inset-10 rounded-[44px] bg-mint/10 blur-3xl" />
+        <div className="relative mx-auto w-full max-w-[390px] rounded-[28px] border border-slate-200 bg-[#f7f9fc] p-4 text-slate-950 shadow-[0_30px_90px_rgba(15,23,42,0.22)] sm:max-w-[430px] sm:p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <Image src="/study-capture-icon.png" alt="" width={54} height={54} className="h-14 w-14 rounded-2xl shadow-[0_16px_30px_rgba(124,58,237,0.28)]" />
+              <div>
+                <p className="text-xl font-semibold leading-tight">Study Capture</p>
+                <p className="mt-1 max-w-[170px] text-sm leading-6 text-slate-600">
+                  Turn what you read into one beautiful PDF.
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-emerald-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-600">
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                Pro Active
+              </div>
+              <p className="mt-3 hidden text-xs font-medium text-slate-500 sm:block">saikat.adhikary@gmail.com</p>
+              <p className="mt-1 text-sm font-medium text-violet-600">Account</p>
+            </div>
           </div>
-          <div className="relative mt-5 h-[78%] overflow-hidden rounded-2xl border border-line bg-panel/95 p-5">
-            <div className="capture-sweep absolute inset-x-0 top-0 h-28 animate-scan-line" />
-            <div className="grid h-full grid-cols-[1.2fr_0.8fr] gap-4">
-              <div className="space-y-4">
-                <div className="h-28 rounded-2xl bg-gradient-to-br from-mint/25 via-lagoon/15 to-white/5" />
-                <div className="mock-text-row w-11/12" />
-                <div className="mock-text-row w-10/12" />
-                <div className="mock-text-row w-8/12" />
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <div className="h-20 rounded-xl bg-panel/75" />
-                  <div className="h-20 rounded-xl bg-amber/15" />
+
+          <div className="mt-6 rounded-2xl border border-emerald-100 bg-white p-4 shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
+            <h3 className="text-lg font-semibold">Smart Capture</h3>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Scroll to capture pages, or use auto-scroll capture for long articles.
+            </p>
+            <div className="mt-5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 px-4 py-4 text-center text-base font-semibold text-white shadow-[0_18px_38px_rgba(5,150,105,0.28)]">
+              <span className="mr-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/20 align-middle">
+                <span className="h-3.5 w-3.5 rounded-full bg-white" />
+              </span>
+              Capture while reading
+            </div>
+            <p className="mt-3 text-center text-sm text-slate-400">Ready</p>
+
+            <div className="mt-5 rounded-xl border border-violet-200 bg-violet-50 p-3">
+              <p className="text-sm font-semibold">Auto-scroll capture</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                We scroll the tab for you and capture automatically.
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-sm font-semibold">
+                <div className="rounded-xl bg-emerald-600 px-4 py-2 text-center text-white shadow-[0_10px_20px_rgba(5,150,105,0.18)]">
+                  Start
+                </div>
+                <div className="rounded-xl bg-white/80 px-4 py-2 text-center text-slate-400">
+                  Pause
+                </div>
+                <div className="rounded-xl bg-white/80 px-4 py-2 text-center text-slate-400">
+                  Resume
+                </div>
+                <div className="rounded-xl bg-white/80 px-4 py-2 text-center text-rose-400">
+                  Stop
                 </div>
               </div>
-              <div className="space-y-3">
-                <div className="h-16 rounded-xl bg-panel/75" />
-                <div className="h-16 rounded-xl bg-mint/15" />
-                <div className="h-16 rounded-xl bg-lagoon/15" />
-                <div className="h-16 rounded-xl bg-coral/15" />
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <h3 className="text-lg font-semibold">Quick Export</h3>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              One screen from this tab only — not added to your Current PDF.
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="rounded-xl bg-white px-4 py-3 text-center text-sm font-semibold text-slate-600 shadow-sm">
+                Save PNG
+              </div>
+              <div className="rounded-xl bg-violet-600 px-4 py-3 text-center text-sm font-semibold text-white shadow-[0_14px_28px_rgba(124,58,237,0.24)]">
+                Save PDF
               </div>
             </div>
-          </div>
-        </div>
-        <div className="absolute bottom-4 right-2 w-[260px] rounded-[24px] border border-line bg-panel/95 p-4 shadow-panel backdrop-blur-xl sm:right-8 sm:w-[300px]">
-          <div className="flex items-center gap-3">
-            <Image src="/study-capture-icon.png" alt="" width={42} height={42} className="h-10 w-10 rounded-xl" />
-            <div>
-              <p className="text-sm font-semibold text-mist">Study Capture</p>
-              <p className="text-xs text-mist/55">Current tab ready</p>
+            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-800">
+              Current PDF · 0 pages
+              <span className="float-right text-slate-400">⌄</span>
             </div>
           </div>
-          <div className="mt-5 grid gap-2">
-            {[
-              ["PNG", "bg-mint text-strong"],
-              ["PDF", "bg-panel/70 text-mist"],
-              ["Add to Book", "bg-lagoon/18 text-lagoon"]
-            ].map(([label, className]) => (
-              <div key={label} className={`rounded-xl px-4 py-3 text-center text-sm font-semibold ${className}`}>
-                {label}
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 rounded-2xl border border-amber/25 bg-amber/10 p-3">
-            <div className="flex items-center justify-between text-xs text-amber">
-              <span>Reading Capture</span>
-              <span>REC 12</span>
-            </div>
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-panel/70">
-              <div className="h-full w-2/3 rounded-full bg-amber" />
-            </div>
-          </div>
-        </div>
-        <div className="absolute right-8 top-6 hidden rounded-full border border-mint/25 bg-mint/12 px-4 py-2 text-sm font-semibold text-mint shadow-glow sm:block">
-          Captured
         </div>
       </div>
     </div>
