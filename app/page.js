@@ -205,7 +205,7 @@ function HeroProductMockup() {
                 <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
                 Pro Active
               </div>
-              <p className="mt-3 hidden text-xs font-medium text-slate-500 sm:block">saikat.adhikary@gmail.com</p>
+              <p className="mt-3 hidden text-xs font-medium text-slate-500 sm:block">s••••@example.com</p>
               <p className="mt-1 text-sm font-medium text-violet-600">Account</p>
             </div>
           </div>
