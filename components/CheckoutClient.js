@@ -14,10 +14,10 @@ import { billingEmail } from "../lib/site";
 const CHECKOUT_KEY = "studyCaptureCheckout";
 const SUCCESS_KEY = "studyCapturePaymentSuccess";
 const DEFAULT_PRICING = {
-  test_mode: false,
-  paid_price_inr: 499,
+  amount: 49900,
+  currency: "INR",
   public_price_inr: 499,
-  original_price_inr: 799
+  strike_price_inr: 799
 };
 
 export default function CheckoutClient() {
@@ -30,11 +30,9 @@ export default function CheckoutClient() {
 
   const source = searchParams.get("src") || "website";
   const reason = searchParams.get("reason") || "direct";
-  const testMode = searchParams.get("test") || "";
-  const testToken = searchParams.get("token") || "";
   const handoff = useMemo(() => getExtensionHandoff(searchParams), [searchParams]);
   const [pricing, setPricing] = useState(DEFAULT_PRICING);
-  const [pricingLoading, setPricingLoading] = useState(Boolean(testMode || testToken));
+  const [pricingLoading, setPricingLoading] = useState(true);
 
   useEffect(() => {
     const stored = window.sessionStorage.getItem(CHECKOUT_KEY);
@@ -52,21 +50,11 @@ export default function CheckoutClient() {
     const controller = new AbortController();
 
     async function loadPricing() {
-      if (!testMode && !testToken) {
-        setPricing(DEFAULT_PRICING);
-        setPricingLoading(false);
-        return;
-      }
-
       setPricingLoading(true);
       try {
-        const pricingParams = new URLSearchParams();
-        if (testMode) pricingParams.set("test", testMode);
-        if (testToken) pricingParams.set("token", testToken);
-        const response = await fetch(
-          `/api/checkout/price?${pricingParams.toString()}`,
-          { signal: controller.signal }
-        );
+        const response = await fetch("/api/checkout/price", {
+          signal: controller.signal
+        });
         const result = await response.json();
         if (response.ok) {
           setPricing(result);
@@ -82,14 +70,14 @@ export default function CheckoutClient() {
 
     loadPricing();
     return () => controller.abort();
-  }, [testMode, testToken]);
+  }, []);
 
   const canPay = useMemo(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email), [email]);
   const canStartPayment = canPay && !pricingLoading;
-  const displayPrice = pricing.test_mode
-    ? pricing.paid_price_inr
-    : pricing.paid_price_inr || pricing.public_price_inr || DEFAULT_PRICING.paid_price_inr;
-  const originalPrice = pricing.original_price_inr || DEFAULT_PRICING.original_price_inr;
+  const displayPrice =
+    pricing.public_price_inr || DEFAULT_PRICING.public_price_inr;
+  const originalPrice =
+    pricing.strike_price_inr || DEFAULT_PRICING.strike_price_inr;
 
   async function startPayment() {
     setError("");
@@ -106,9 +94,7 @@ export default function CheckoutClient() {
       const order = await postJson("/api/razorpay/create-order", {
         email,
         source,
-        reason,
-        test: testMode,
-        token: testToken
+        reason
       });
 
       const checkout = new window.Razorpay({
@@ -165,9 +151,6 @@ export default function CheckoutClient() {
                 source,
                 extensionId: handoff.extensionId,
                 extensionHandoff,
-                testMode: Boolean(order.test_mode),
-                paidPriceInr: order.paid_price_inr,
-                originalPriceInr: order.original_price_inr,
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 paidAt: new Date().toISOString()
@@ -213,30 +196,20 @@ export default function CheckoutClient() {
     <section className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[0.85fr_1.15fr]">
       <div className="rounded-3xl border border-line bg-panel/80 p-6 shadow-panel sm:p-8">
         <p className="text-sm font-semibold text-mint">Checkout</p>
-        {pricing.test_mode ? (
-          <div className="mt-5 rounded-2xl border border-mint/25 bg-mint/10 px-4 py-3 text-sm font-semibold text-mint">
-            Founder live test mode — ₹{pricing.paid_price_inr}
-          </div>
-        ) : (
-          <div className="mt-5 inline-flex rounded-full border border-amber/25 bg-amber/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-amber">
-            Introductory offer
-          </div>
-        )}
+        <div className="mt-5 inline-flex rounded-full border border-amber/25 bg-amber/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-amber">
+          Introductory offer
+        </div>
         <h1 className="mt-4 text-4xl font-semibold text-mist">Study Capture Pro Lifetime</h1>
         <div className="mt-7 flex flex-wrap items-end gap-3">
           <span className="text-5xl font-semibold text-mist">₹{displayPrice}</span>
-          {!pricing.test_mode ? (
-            <span className="pb-2 text-2xl font-semibold text-mist/38 line-through">₹{originalPrice}</span>
-          ) : null}
+          <span className="pb-2 text-2xl font-semibold text-mist/38 line-through">₹{originalPrice}</span>
           <span className="pb-2 text-sm text-mist/55">
-            {pricing.test_mode ? "founder live test payment" : "payable today · one-time payment · lifetime Pro access"}
+            payable today · one-time payment · lifetime Pro access
           </span>
         </div>
-        {!pricing.test_mode ? (
-          <p className="mt-3 text-sm font-medium text-mint">
-            Limited-time introductory price for early users.
-          </p>
-        ) : null}
+        <p className="mt-3 text-sm font-medium text-mint">
+          Limited-time introductory price for early users.
+        </p>
         <div className="mt-8 rounded-2xl border border-mint/20 bg-mint/10 p-4">
           <div className="flex gap-3">
             <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-mint" aria-hidden="true" />
@@ -248,7 +221,7 @@ export default function CheckoutClient() {
         </div>
         {!canPay ? (
           <Link
-            href={buildUpgradeReturnHref({ source, reason, extensionId: handoff.extensionId, testMode, testToken })}
+            href={buildUpgradeReturnHref({ source, reason, extensionId: handoff.extensionId })}
             className="mt-6 inline-flex text-sm font-semibold text-mint transition hover:text-mist"
           >
             Enter email on upgrade page
@@ -309,13 +282,11 @@ function buildCheckoutError(error) {
   return error.message || "Request failed.";
 }
 
-function buildUpgradeReturnHref({ source, reason, extensionId, testMode, testToken }) {
+function buildUpgradeReturnHref({ source, reason, extensionId }) {
   const params = new URLSearchParams();
   params.set("src", source || "website");
   if (reason && reason !== "direct") params.set("reason", reason);
   if (extensionId) params.set("extId", extensionId);
-  if (testMode) params.set("test", testMode);
-  if (testToken) params.set("token", testToken);
   return `/upgrade?${params.toString()}`;
 }
 

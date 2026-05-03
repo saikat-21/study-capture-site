@@ -7,9 +7,9 @@ import { fail, HttpError, ok, readJson } from "../../../../lib/server/errors";
 import {
   buildRazorpayReceipt,
   createRazorpayOrder,
+  getCheckoutPricing,
   getRazorpayKeyId,
-  PRO_CURRENCY,
-  resolveCheckoutPricing
+  PRO_CURRENCY
 } from "../../../../lib/server/razorpay";
 import { maybeAssertRateLimit, maybeRecordAuthEvent } from "../../../../lib/server/rate-limit";
 import { normalizeEmail, normalizeOptionalString } from "../../../../lib/server/validation";
@@ -34,15 +34,10 @@ export async function POST(request) {
     email = normalizeEmail(body.email);
     const source = normalizeSource(body.source);
     const reason = normalizeReason(body.reason);
-    const pricing = resolveCheckoutPricing({
-      testMode: normalizeOptionalString(body.test, 40),
-      testToken: normalizeOptionalString(body.token, 200)
-    });
-    const paymentSource = pricing.testMode ? "internal_test" : source;
+    const pricing = getCheckoutPricing();
     const pricingMetadata = {
       ...pricing.metadata,
-      source: paymentSource,
-      original_source: source
+      source
     };
     rateLimitContext = await maybeAssertRateLimit({
       request,
@@ -72,22 +67,11 @@ export async function POST(request) {
       );
     }
 
-    const receipt = buildRazorpayReceipt({ email, source: paymentSource });
-
-    console.log("razorpay_create_order_pricing", {
-      recipientEmail: email,
-      source: paymentSource,
-      reason,
-      amount: pricing.amount,
-      currency: pricing.currency,
-      paidPriceInr: pricing.paidPriceInr,
-      originalPriceInr: pricing.originalPriceInr,
-      testMode: pricing.testMode
-    });
+    const receipt = buildRazorpayReceipt({ email, source });
 
     const razorpayOrder = await createRazorpayOrder({
       email,
-      source: paymentSource,
+      source,
       reason,
       receipt,
       amount: pricing.amount,
@@ -104,7 +88,7 @@ export async function POST(request) {
 
     await createPendingOrder({
       email,
-      source: paymentSource,
+      source,
       reason,
       razorpayOrder,
       receipt,
@@ -118,11 +102,9 @@ export async function POST(request) {
       eventType: "payment_order_create",
       success: true,
       metadata: {
-        source: paymentSource,
-        originalSource: source,
+        source,
         reason,
-        providerOrderId: razorpayOrder.id,
-        testMode: pricing.testMode
+        providerOrderId: razorpayOrder.id
       }
     });
 
@@ -131,10 +113,8 @@ export async function POST(request) {
       amount: razorpayOrder.amount,
       currency: razorpayOrder.currency,
       key_id: getRazorpayKeyId(),
-      test_mode: pricing.testMode,
       public_price_inr: pricing.publicPriceInr,
-      original_price_inr: pricing.originalPriceInr,
-      paid_price_inr: pricing.paidPriceInr
+      strike_price_inr: pricing.strikePriceInr
     });
   } catch (error) {
     await maybeRecordAuthEvent({

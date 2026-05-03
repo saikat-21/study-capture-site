@@ -3,7 +3,6 @@ import {
   getPendingOrderByRazorpayOrderId,
   markPaymentSuccess
 } from "../../../../lib/db";
-import { sendWelcomeEmail } from "../../../../lib/server/email";
 import { fail, HttpError, ok, readJson } from "../../../../lib/server/errors";
 import { signActivationGrant } from "../../../../lib/server/license-token";
 import { verifyRazorpayPaymentSignature } from "../../../../lib/server/razorpay";
@@ -83,12 +82,6 @@ export async function POST(request) {
       paymentId: payment.provider_payment_id,
       paymentRecordId: payment.id,
       rawEvent: payment.raw_event
-    });
-
-    await sendWelcomeEmail(email, {
-      payment,
-      license,
-      trigger: "verify-payment"
     });
 
     const activationGrant = signActivationGrant({

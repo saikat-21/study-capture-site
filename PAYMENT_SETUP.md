@@ -5,20 +5,19 @@
 Set these in Vercel:
 
 ```text
-RAZORPAY_KEY_ID=<live key id>
+RAZORPAY_KEY_ID=<live key id, must start with rzp_live_>
 RAZORPAY_KEY_SECRET=<live key secret>
 NEXT_PUBLIC_RAZORPAY_KEY_ID=<same live key id>
 RAZORPAY_WEBHOOK_SECRET=<webhook secret you create in Razorpay>
 NEXT_PUBLIC_SITE_URL=https://studycapture.co
 NEXT_PUBLIC_BILLING_EMAIL=billing@studycapture.co
-PUBLIC_PRICE_INR=499
-ORIGINAL_PRICE_INR=799
-ENABLE_INTERNAL_TEST_PAYMENTS=false
-FOUNDER_TEST_TOKEN=
-TEST_PRICE_INR=1
+RESEND_API_KEY=<required for welcome email>
+RESEND_FROM_EMAIL=Study Capture <billing@studycapture.co>
 ```
 
 `RAZORPAY_KEY_SECRET` and `RAZORPAY_WEBHOOK_SECRET` must stay server-only.
+
+Checkout pricing is fixed in server code (**₹499** / `49900` paise, **₹799** strike for display/reference). There are no alternate test prices or founder tokens.
 
 ## Webhook URL
 
@@ -39,30 +38,18 @@ In Razorpay Dashboard live mode:
 7. Select these events:
    - `payment.captured`
    - `order.paid`
-   - `payment.failed`
 
 ## Implemented Flow
 
 1. `/upgrade` captures the license email and preserves `src` and `reason`.
 2. `/checkout` calls `/api/razorpay/create-order`.
-3. The server creates a Razorpay order for the server-resolved price. Public checkout is `49900` paise in `INR`, with `799` stored as the original launch reference price.
+3. The server creates a Razorpay order for **₹499** (`49900` paise) in `INR`, with `799` stored as the original/list reference price in order notes.
 4. The browser opens Razorpay Checkout using `order_id`.
 5. Checkout returns `razorpay_payment_id`, `razorpay_order_id`, and `razorpay_signature`.
-6. `/api/razorpay/verify-payment` verifies the signature with `RAZORPAY_KEY_SECRET`.
-7. The app marks the email Pro Lifetime in `lib/db.js`, creates an internal license record/reference, and upserts an active `pro_lifetime` subscription.
-8. After Pro is granted, the server sends a Resend-backed confirmation email through an idempotent `email_events` record. Email failure is logged and does not roll back payment/license activation.
-9. `/api/razorpay/webhook` verifies `X-Razorpay-Signature` using the raw request body, logs the received event, and handles duplicate payment/email events idempotently. Failed payments are recorded without activating a license.
-10. The extension Activate Pro flow sends the verified email activation grant/session and device fingerprint to `/api/license/activate`; the server verifies the paid license before issuing a signed device token.
-
-## Founder Live Test Mode
-
-For an internal live Razorpay smoke test, temporarily set `ENABLE_INTERNAL_TEST_PAYMENTS=true`, set a strong `FOUNDER_TEST_TOKEN`, and redeploy. Then use:
-
-```text
-https://www.studycapture.co/upgrade?src=extension&test=1&token=<FOUNDER_TEST_TOKEN>
-```
-
-The server validates the token before creating the order. Valid founder test orders use `100` paise, save `source = internal_test`, and keep test metadata in `payments.raw_event.study_capture`. Wrong, missing, or disabled tokens stay on the public `49900` paise path. Disable by setting `ENABLE_INTERNAL_TEST_PAYMENTS=false` and redeploying.
+6. `/api/razorpay/verify-payment` verifies the signature with `RAZORPAY_KEY_SECRET`, activates the license, and returns an activation grant for checkout UI. Welcome email is sent only via the Razorpay webhook (**`payment.captured`** / **`order.paid`**), not from this endpoint.
+7. The app marks the email Pro Lifetime in `lib/db.js`, creates license records and upserts `pro_lifetime` where applicable.
+8. `/api/razorpay/webhook` verifies `X-Razorpay-Signature` on the raw body, processes events idempotently, and triggers the welcome email only for **`payment.captured`** and **`order.paid`** (with `RESEND_API_KEY` / `RESEND_FROM_EMAIL` required). Other webhook events are acknowledged without activating a license.
+9. The extension Activate Pro flow sends activation grant/session and device fingerprint to `/api/license/activate`; the server verifies the paid license before issuing a signed device token.
 
 ## Persistence
 

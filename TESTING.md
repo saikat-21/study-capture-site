@@ -37,9 +37,6 @@ where schemaname = 'public'
   - `ADMIN_EMAILS=founder@studycapture.co`
   - `RESEND_API_KEY`
   - `RESEND_FROM_EMAIL=Study Capture <billing@studycapture.co>`
-  - `PUBLIC_PRICE_INR=499`
-  - `ORIGINAL_PRICE_INR=799`
-  - `ENABLE_INTERNAL_TEST_PAYMENTS=false` unless running the founder test below
 
 ## 0.1 Supabase Numeric Verification-Code Auth
 
@@ -80,57 +77,16 @@ Expected:
 - Existing users and new users see the same login flow.
 - No production email redirects to `localhost:3000`.
 
-## 0.2 Founder ₹1 Live Payment Test
+## 0.2 Razorpay / Resend Smoke (Production)
 
-Use this only for internal live Razorpay verification. Public users must never receive this URL.
+Run this after verifying live keys (**`rzp_live_…`**) and `RESEND_*` env vars:
 
-Temporarily set these Vercel env vars and redeploy:
-
-- `ENABLE_INTERNAL_TEST_PAYMENTS=true`
-- `FOUNDER_TEST_TOKEN=<secret-random-string>`
-- `TEST_PRICE_INR=1`
-- `PUBLIC_PRICE_INR=499`
-- `ORIGINAL_PRICE_INR=799`
-
-Test URL:
-
-```text
-https://www.studycapture.co/upgrade?src=extension&test=1&token=<FOUNDER_TEST_TOKEN>
-```
-
-Run:
-
-1. Open the test URL.
-2. Confirm the upgrade page shows `Founder live test mode — ₹1`.
-3. Enter a fresh email and continue to checkout.
-4. Confirm the browser redirects to `/checkout?src=extension&test=1&token=<FOUNDER_TEST_TOKEN>`.
-5. Confirm checkout shows `Founder live test mode — ₹1`.
-6. Click `Pay ₹1 securely`.
-7. Complete Razorpay Checkout using the same live production flow.
-8. Confirm `/success` shows the paid email, welcome copy, and extension handoff behavior.
-9. In Supabase `payments`, confirm:
-   - `source = internal_test`
-   - `amount = 100`
-   - `status = paid`
-   - `raw_event->'study_capture'->>'test_mode' = true`
-   - `raw_event->'study_capture'->>'original_price_inr' = 799`
-   - `raw_event->'study_capture'->>'paid_price_inr' = 1`
-10. Confirm Supabase `subscriptions.amount = 100` for the test email.
-11. Confirm the license is `paid_lifetime` and extension activation works.
-
-Negative checks:
-
-1. Open `https://www.studycapture.co/upgrade?src=extension&test=1&token=wrong-token`.
-2. Confirm no founder test banner appears.
-3. Confirm checkout remains ₹499.
-4. Set `ENABLE_INTERNAL_TEST_PAYMENTS=false`, redeploy, and open the correct token URL.
-5. Confirm the token does nothing and checkout remains ₹499.
-
-Disable after testing:
-
-- Set `ENABLE_INTERNAL_TEST_PAYMENTS=false`.
-- Optionally rotate or remove `FOUNDER_TEST_TOKEN`.
-- Redeploy production.
+1. Open `https://studycapture.co/upgrade?src=website`.
+2. Confirm upgrade and `/checkout` UI show **₹499** (with **₹799** struck through), with no alternate internal-pricing copy.
+3. Complete a modest real payment using a reachable inbox you control.
+4. In Vercel logs, confirm a **`webhook_verified`** line for `payment.captured` or `order.paid`.
+5. Confirm the inbox receives exactly one Study Capture Pro welcome email.
+6. In Supabase `payments`, confirm `amount` matches ₹499 (`49900` paise equivalent in stored units) and `source` reflects the real checkout source (e.g. `website` / `extension`).
 
 ## 1. Razorpay Payment Captured
 
@@ -424,13 +380,13 @@ Expected:
 
 - No row, or `state` is not `paid_lifetime`.
 
-### Failed Payment
+### Failed or Cancelled Payment
 
-Trigger a failed Razorpay payment.
+Cancel Razorpay Checkout, or trigger a failed payment from Checkout without completing capture.
 
 Expected:
 
-- Payment row may exist with `status = failed`.
+- No paid payment row exists for the incomplete checkout.
 - No active subscription exists.
 - No `paid_lifetime` license exists.
 
@@ -453,7 +409,7 @@ where email = 'FAILED_TEST_EMAIL_HERE';
 
 Expected:
 
-- Latest payment is `failed` if Razorpay sent `payment.failed`.
+- No new `paid` payment exists.
 - License is absent or not `paid_lifetime`.
 - Subscription is absent or not `active`.
 

@@ -13,10 +13,6 @@ Set these in Vercel Project Settings:
 - `RAZORPAY_KEY_SECRET`
 - `NEXT_PUBLIC_RAZORPAY_KEY_ID`
 - `RAZORPAY_WEBHOOK_SECRET`
-- `PUBLIC_PRICE_INR=799`
-- `ENABLE_INTERNAL_TEST_PAYMENTS=false`
-- `FOUNDER_TEST_TOKEN`
-- `TEST_PRICE_INR=1`
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
@@ -33,7 +29,7 @@ Set these in Vercel Project Settings:
 
 Never expose `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `LICENSE_TOKEN_SECRET`, `DEVICE_HASH_SECRET`, `RATE_LIMIT_SECRET`, `ADMIN_EMAILS`, or `RESEND_API_KEY` with a `NEXT_PUBLIC_` prefix.
 
-Keep `ENABLE_INTERNAL_TEST_PAYMENTS=false` outside short founder-only live payment tests. When it is false, `FOUNDER_TEST_TOKEN` has no effect and public checkout stays at ₹799.
+Pricing is enforced in server code (**₹499** charge, **rzp_live_…** keys only). `RESEND_API_KEY` is required for Pro welcome emails triggered by Razorpay webhooks.
 
 ## Razorpay
 
@@ -47,7 +43,6 @@ Add it in Razorpay Dashboard live mode under webhooks and subscribe to:
 
 - `payment.captured`
 - `order.paid`
-- `payment.failed`
 
 Use the same webhook secret in Razorpay and Vercel as `RAZORPAY_WEBHOOK_SECRET`.
 
@@ -81,9 +76,7 @@ The website intentionally does not pass `emailRedirectTo` in `/api/auth/send-otp
 
 ## Extension Handoff
 
-Extension-origin upgrade and activation URLs include `src=extension` and `extId`. After payment or OTP login, the website sends the paid email and license reference back to the installed extension. The extension then calls `/api/license/activate` itself, using its own device ID and browser metadata, and stores only the server-signed license token.
-
-Manual license reference entry remains available inside the extension as a fallback.
+Extension-origin upgrade and activation URLs include `src=extension` and `extId`. After payment or OTP login, the website sends the paid email and short-lived activation grant back to the installed extension. The extension then calls `/api/license/activate` itself, using its own device ID and browser metadata, and stores only the server-signed license token.
 
 ## Admin
 
