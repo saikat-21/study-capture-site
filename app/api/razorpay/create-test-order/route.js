@@ -16,7 +16,6 @@ const TEST_AMOUNT_PAISE = 1000;
 const TEST_PRICE_INR = 10;
 const TEST_SOURCE = "temporary_test_checkout";
 const TEST_REASON = "pro_license_email_flow_test";
-const TEST_PAYMENT_LINK_URL = "https://rzp.io/rzp/vzLewM6W";
 
 export async function POST(request) {
   let email;
@@ -44,8 +43,7 @@ export async function POST(request) {
       source: TEST_SOURCE,
       original_source: TEST_SOURCE,
       original_price_inr: TEST_PRICE_INR,
-      paid_price_inr: TEST_PRICE_INR,
-      payment_link_url: TEST_PAYMENT_LINK_URL
+      paid_price_inr: TEST_PRICE_INR
     };
 
     const razorpayOrder = await createRazorpayOrder({
@@ -95,8 +93,7 @@ export async function POST(request) {
       currency: razorpayOrder.currency,
       key_id: getRazorpayKeyId(),
       test_mode: true,
-      paid_price_inr: TEST_PRICE_INR,
-      payment_link_url: TEST_PAYMENT_LINK_URL
+      paid_price_inr: TEST_PRICE_INR
     });
   } catch (error) {
     await maybeRecordAuthEvent({

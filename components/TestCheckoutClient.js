@@ -4,7 +4,6 @@ import { useMemo, useRef, useState } from "react";
 import { Loader2, ShieldCheck } from "lucide-react";
 
 const DEFAULT_TEST_EMAIL = "saikat.a@icloud.com";
-const TEST_PAYMENT_LINK_URL = "https://rzp.io/rzp/vzLewM6W";
 
 export default function TestCheckoutClient() {
   const [email, setEmail] = useState(DEFAULT_TEST_EMAIL);
@@ -132,22 +131,14 @@ export default function TestCheckoutClient() {
           </p>
         ) : null}
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <button
-            type="submit"
-            disabled={!canPay || loading}
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-strong transition hover:-translate-y-0.5 hover:bg-mint/85 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
-            Pay ₹10
-          </button>
-          <a
-            href={TEST_PAYMENT_LINK_URL}
-            className="inline-flex h-12 items-center justify-center rounded-full border border-line bg-panel/80 px-6 text-sm font-semibold text-mist transition hover:-translate-y-0.5 hover:border-mint/45 hover:bg-mint/10"
-          >
-            Razorpay hosted link
-          </a>
-        </div>
+        <button
+          type="submit"
+          disabled={!canPay || loading}
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-mint px-6 text-sm font-semibold text-strong transition hover:-translate-y-0.5 hover:bg-mint/85 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
+          Pay ₹10
+        </button>
       </form>
     </section>
   );

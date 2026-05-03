@@ -74,6 +74,17 @@ export async function POST(request) {
 
     const receipt = buildRazorpayReceipt({ email, source: paymentSource });
 
+    console.log("razorpay_create_order_pricing", {
+      recipientEmail: email,
+      source: paymentSource,
+      reason,
+      amount: pricing.amount,
+      currency: pricing.currency,
+      paidPriceInr: pricing.paidPriceInr,
+      originalPriceInr: pricing.originalPriceInr,
+      testMode: pricing.testMode
+    });
+
     const razorpayOrder = await createRazorpayOrder({
       email,
       source: paymentSource,
