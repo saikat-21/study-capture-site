@@ -100,28 +100,31 @@ export async function POST(request) {
       throw new HttpError(400, "invalid_webhook_json", "Webhook body must be valid JSON.");
     }
 
-    if (await hasProcessedWebhookEvent(eventId)) {
-      console.log("Razorpay webhook duplicate ignored.", {
-        eventId
-      });
-      return ok({ message: "Webhook already processed.", duplicate: true });
-    }
-
     eventType = event.event || "unknown";
     const details = await extractPaymentDetails(event);
     orderId = details.orderId;
     paymentId = details.paymentId;
     email = details.email;
+    const webhookAlreadyProcessed = await hasProcessedWebhookEvent(eventId);
 
     console.log("Razorpay webhook event parsed.", {
       eventId,
       eventType,
       orderId,
       paymentId,
-      email
+      email,
+      webhookAlreadyProcessed
     });
 
     if (!HANDLED_EVENTS.has(eventType)) {
+      if (webhookAlreadyProcessed) {
+        console.log("Razorpay webhook duplicate ignored event acknowledged.", {
+          eventId,
+          eventType
+        });
+        return ok({ message: "Webhook already processed.", duplicate: true });
+      }
+
       const webhookRecord = await markWebhookEventProcessed({
         eventId,
         eventType,
@@ -166,6 +169,16 @@ export async function POST(request) {
     }
 
     if (eventType === "payment.failed") {
+      if (webhookAlreadyProcessed) {
+        console.log("Razorpay webhook duplicate failed event acknowledged.", {
+          eventId,
+          eventType,
+          orderId,
+          paymentId
+        });
+        return ok({ message: "Webhook already processed.", duplicate: true });
+      }
+
       const failedPaymentId = paymentId || eventId;
       const failedPayment = await markPaymentFailed({
         email,
@@ -242,9 +255,9 @@ export async function POST(request) {
       eventType
     });
     console.log("Razorpay webhook email event result.", {
-      eventId,
       eventType,
-      email,
+      recipientEmail: email,
+      paymentId: stablePaymentId,
       emailEventResult: summarizeEmailResult(emailResult)
     });
 
@@ -378,7 +391,6 @@ function summarizeEmailResult(result) {
     skipped: Boolean(result.skipped),
     reason: result.reason || null,
     status: result.status || null,
-    resendId: result.id || null,
     error: result.error || null
   };
 }
