@@ -50,9 +50,17 @@ export async function POST(request) {
 
     rawBody = await request.text();
     const signature = request.headers.get("x-razorpay-signature");
+    const webhookSecretExists = Boolean(process.env.RAZORPAY_WEBHOOK_SECRET);
     eventId =
       request.headers.get("x-razorpay-event-id") ||
       `body_${await digestEventBody(rawBody)}`;
+
+    console.log("Razorpay webhook signature input.", {
+      eventId,
+      signatureHeaderExists: Boolean(signature),
+      webhookSecretExists,
+      rawBodyLength: rawBody.length
+    });
 
     if (!signature) {
       console.warn("Razorpay webhook signature verification result.", {
@@ -63,6 +71,14 @@ export async function POST(request) {
       throw new HttpError(400, "missing_webhook_signature", "Missing Razorpay webhook signature.");
     }
 
+    if (!webhookSecretExists) {
+      console.error("Razorpay webhook configuration missing.", {
+        eventId,
+        webhookSecretExists: false
+      });
+      throw new HttpError(500, "configuration_missing", "RAZORPAY_WEBHOOK_SECRET is not configured.");
+    }
+
     const isVerified = verifyRazorpayWebhookSignature({ rawBody, signature });
     console.log("Razorpay webhook signature verification result.", {
       eventId,
@@ -70,7 +86,7 @@ export async function POST(request) {
     });
 
     if (!isVerified) {
-      throw new HttpError(400, "invalid_webhook_signature", "Invalid Razorpay webhook signature.");
+      throw new HttpError(401, "invalid_webhook_signature", "Invalid Razorpay webhook signature.");
     }
 
     let event;
@@ -124,11 +140,29 @@ export async function POST(request) {
     }
 
     if (!orderId || !email) {
-      throw new HttpError(
-        400,
-        "webhook_payload_incomplete",
-        "Webhook payload did not contain order or email details."
-      );
+      const webhookRecord = await markWebhookEventProcessed({
+        eventId,
+        eventType,
+        razorpayOrderId: orderId,
+        razorpayPaymentId: paymentId,
+        rawEvent: event
+      });
+
+      console.warn("Razorpay webhook valid event missing payment context.", {
+        eventId,
+        eventType,
+        orderId,
+        paymentId,
+        emailPresent: Boolean(email),
+        dbUpdateResult: summarizeRecord(webhookRecord)
+      });
+
+      return ok({
+        message: "Webhook accepted but payment context was incomplete.",
+        eventId,
+        eventType,
+        incomplete: true
+      });
     }
 
     if (eventType === "payment.failed") {
@@ -289,10 +323,15 @@ async function digestEventBody(rawBody) {
 
 function logWebhookEnvironmentStatus() {
   const missing = REQUIRED_ENV_VARS.filter((name) => !process.env[name]);
+  const present = Object.fromEntries(
+    REQUIRED_ENV_VARS.map((name) => [name, Boolean(process.env[name])])
+  );
 
   if (missing.length > 0) {
     console.warn("Razorpay webhook environment check.", {
       ok: false,
+      webhookSecretExists: Boolean(process.env.RAZORPAY_WEBHOOK_SECRET),
+      present,
       missing
     });
     return;
@@ -300,6 +339,8 @@ function logWebhookEnvironmentStatus() {
 
   console.log("Razorpay webhook environment check.", {
     ok: true,
+    webhookSecretExists: true,
+    present,
     checked: REQUIRED_ENV_VARS
   });
 }
